@@ -3,114 +3,138 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>P0 — Title</title>
-<style>
-.hamburger{display:inline-block}
-.mobile-panel{display:block; border-top:1px solid var(--border); background:var(--card)}
-.mobile-panel a{display:block; padding:12px 16px; border-bottom:1px solid var(--border); color:var(--muted)}
-.mobile-panel a:last-child{border-bottom:none}
-.mobile-panel a.active{color:var(--text); background:color-mix(in oklab, var(--card) 85%, transparent)}
-.mobile-panel[hidden]{display:none}
-}
-
-
-/* Hero */
-.hero{display:grid; grid-template-columns:1.2fr 1fr; align-items:center; gap:24px; padding:28px 0}
-.hero h1{margin:0 0 10px; line-height:1.08; font-size:clamp(28px, 5vw, 44px)}
-.muted{color:var(--muted)}
-.btn{display:inline-flex; gap:10px; align-items:center; padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:var(--card); font-weight:600}
-.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2)); border:none; box-shadow:0 10px 30px -12px var(--ring)}
-.card{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:16px}
-
-
-/* Sections */
-.section{padding:12px 0}
-.grid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px}
-@media (max-width:900px){.hero{grid-template-columns:1fr} .grid{grid-template-columns:repeat(2, minmax(0,1fr))}}
-@media (max-width:600px){.grid{grid-template-columns:1fr}}
-.proj{display:flex; flex-direction:column; gap:10px; border:1px solid var(--border); border-radius:16px; overflow:hidden; background:linear-gradient(180deg, color-mix(in oklab, var(--card) 85%, transparent), var(--card))}
-.thumb{aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; font-weight:800; letter-spacing:.3px; background:linear-gradient(135deg, color-mix(in oklab, var(--accent) 65%, transparent), color-mix(in oklab, var(--accent-2) 55%, transparent))}
-.proj .body{padding:12px 14px 14px; display:flex; justify-content:space-between; gap:12px}
-.chip{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); background:color-mix(in oklab, var(--card) 75%, transparent)}
-
-
-footer{margin:24px 0 12px; padding-top:16px; border-top:1px solid var(--border); color:var(--muted); font-size:14px}
-</style>
+  <title>P0 — Becoming Friends with Your Camera</title>
+  <meta name="description" content="Project 0 (CS 280A): photography experiments on perspective, focal length, and dolly zoom." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
 </head>
 <body>
-<header>
-<div class="container nav">
-<a class="brand" href="/">
-<span class="logo" aria-hidden="true"></span>
-<span>Sarah Kiefer</span>
-</a>
-<nav class="menu" aria-label="Primary">
-<a href="/" data-nav="home">Home</a>
-<a href="/about.html" data-nav="about">About</a>
-<a href="/cs280a/" data-nav="cs280a">CS 280A</a>
-</nav>
-<button class="hamburger" aria-controls="mobile-menu" aria-expanded="false" aria-label="Toggle navigation">
-<span></span><span></span><span></span>
-</button>
-</div>
-<div id="mobile-menu" class="mobile-panel container" hidden>
-<a href="/" data-nav="home">Home</a>
-<a href="/about.html" data-nav="about">About</a>
-<a href="/cs280a/" data-nav="cs280a">CS 280A</a>
-</div>
-</header>
-<main class="container">
-    <a class="btn" href="/cs280a/">← Back to CS 280A</a>
-    <h1 style="margin:18px 0 8px">Project 0 — Title</h1>
-    <p class="muted">Brief overview.</p>
+  <header>
+    <div class="wrap">
+      <h1>Sarah Kiefer</h1>
+      <nav aria-label="Primary">
+        <div class="hamburger" aria-label="Toggle navigation" role="button" tabindex="0">
+          <span></span><span></span><span></span>
+        </div>
+        <ul>
+          <li><a href="/" data-nav="home">Home</a></li>
+          <li><a href="/about.html" data-nav="about">About</a></li>
+          <li><a href="/cs280a/" data-nav="cs280a">CS 280A Projects</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-    <div class="card">
-      <h3>Methods</h3>
-      <ul style="margin:0 0 0 18px; color:var(--muted)">
-        <li>Method 1</li>
-        <li>Method 2</li>
-      </ul>
+  <main class="container">
+    <!-- Breadcrumb -->
+    <p class="muted" style="margin:14px 0;"><a href="/cs280a/">← Back to CS 280A</a></p>
+
+    <h2>Project 0: Becoming Friends with Your Camera</h2>
+    <p class="muted">CS 280A — Computer Vision and Computational Photography</p>
+
+    <div class="card" style="margin-top:12px;">
+      <h3>Overview</h3>
+      <p>
+        This project explores how distance, focal length, and camera motion affect perception.
+        Through three mini-experiments we compare portraits at different distances/zooms, observe
+        perspective compression in architecture, and create a dolly-zoom sequence.
+      </p>
     </div>
 
-    <div class="card">
-      <h3>Results</h3>
-      <figure>
-        <img src="./media/img1.jpg" alt="Result" style="max-width:100%; height:auto; border-radius:12px; border:1px solid var(--border)" />
-        <figcaption class="muted">Caption here.</figcaption>
+    <!-- Part 1 -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Part 1 — Selfie: The Wrong Way vs. The Right Way</h3>
+      <p>
+        Goal: demonstrate why stepping back and zooming in yields more natural facial proportions than a close wide-angle shot.
+      </p>
+
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card">
+          <img src="./media/selfie_wrong.jpg" alt="Close-up portrait (distorted)" style="width:100%; border-radius:.5rem;" />
+          <figcaption class="muted">Close &amp; wide — noticeable distortion (larger nose, narrower ears).</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="./media/selfie_right.jpg" alt="Distant portrait with zoom" style="width:100%; border-radius:.5rem;" />
+          <figcaption class="muted">Step back &amp; zoom — more natural proportions for the same face size.</figcaption>
+        </figure>
+      </div>
+
+      <details style="margin-top:10px;">
+        <summary>Notes</summary>
+        <ul class="muted">
+          <li>Keep the face roughly the same size by moving back and increasing focal length.</li>
+          <li>Compare features (nose/ears) to illustrate perspective distortion from camera distance.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Part 2 -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Part 2 — Architectural Perspective Compression</h3>
+      <p>
+        Goal: show how telephoto vs. wide-angle alters perceived depth. Telephoto “compresses”
+        distances; wide-angle emphasizes depth.
+      </p>
+
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card">
+          <img src="./media/telephoto.jpg" alt="Telephoto compressed perspective" style="width:100%; border-radius:.5rem;" />
+          <figcaption class="muted">Telephoto from far away — buildings appear closer together (compression).</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="./media/wideangle.jpg" alt="Wide angle natural depth" style="width:100%; border-radius:.5rem;" />
+          <figcaption class="muted">Wide &amp; close — stronger depth cues, more separation between objects.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Part 3 -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Part 3 — The Dolly Zoom Effect</h3>
+      <p>
+        Move the camera back while zooming in so the subject stays the same size but the background
+        stretches. Stitch the frames into an animation.
+      </p>
+
+      <figure class="card" style="margin-top:10px;">
+        <img src="./media/dollyzoom.gif" alt="Dolly zoom animation" style="width:100%; border-radius:.5rem;" />
+        <figcaption class="muted">Subject size fixed; background perspective changes dramatically.</figcaption>
       </figure>
-      <video controls style="width:100%; border-radius:12px; border:1px solid var(--border); margin-top:10px">
-        <source src="./media/demo.mp4" type="video/mp4"/>
-      </video>
-    </div>
+
+      <details style="margin-top:10px;">
+        <summary>Capture tips</summary>
+        <ul class="muted">
+          <li>Mark the subject to keep framing consistent between shots.</li>
+          <li>Increase focal length as you step back; keep exposure consistent if possible.</li>
+          <li>Assemble frames into a GIF/MP4; optionally stabilize in post.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Methods -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Methods</h3>
+      <ul class="muted">
+        <li><strong>Distance vs. focal length:</strong> maintain subject size while changing camera distance to separate perspective from magnification.</li>
+        <li><strong>Perspective compression:</strong> capture a scene twice — far+telephoto and near+wide — matching framing as closely as possible.</li>
+        <li><strong>Dolly zoom:</strong> collect a sequence with incremental position/zoom changes; compose as GIF (or MP4 for smaller files).</li>
+      </ul>
+    </section>
+
+    <!-- Optional reflections -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Reflection</h3>
+      <p class="muted">
+        A short paragraph about what surprised you, what was tricky to capture, and any improvements you’d try next time.
+      </p>
+    </section>
   </main>
-<footer class="container">
-<div>© <span id="y"></span> Sarah Kiefer · Clean, responsive, and student‑project friendly</div>
-</footer>
 
+  <footer>
+    © <span id="year"></span> Sarah Kiefer — All Rights Reserved
+  </footer>
 
-<script>
-// Hamburger toggle
-const btn = document.querySelector('.hamburger');
-const panel = document.getElementById('mobile-menu');
-btn.addEventListener('click', () => {
-const expanded = btn.getAttribute('aria-expanded') === 'true';
-btn.setAttribute('aria-expanded', String(!expanded));
-panel.hidden = expanded; // hide if it was open
-});
-
-
-// Active link highlighting based on path
-(function(){
-const path = location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
-const key = path === '' ? 'home' : path.endsWith('/cs280a') ? 'cs280a' : path.endsWith('/about') ? 'about' : null;
-if(!key) return;
-document.querySelectorAll(`[data-nav="${key}"]`).forEach(a => a.classList.add('active'));
-})();
-
-
-// Set year
-document.getElementById('y').textContent = new Date().getFullYear();
-</script>
+  <script src="/script.js" defer></script>
 </body>
 </html>
-  
+
