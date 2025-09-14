@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>P1 — Colorizing the Prokudin-Gorskii Collection</title>
-  <meta name="description" content="Split glass-plate images into B/G/R, align with a pyramid (NCC on gradients), and add automatic post-processing." />
+  <meta name="description" content="Split glass-plate images into B/G/R, align with a pyramid (NCC), and add automatic post-processing." />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
 
@@ -90,19 +90,22 @@
       <h3>Overview</h3>
       <p>
         Each glass plate contains three grayscale exposures (B, G, R). I split the plate vertically into thirds,
-        then align Red and Blue to Green using a coarse-to-fine pyramid. At each level I compute
-        <strong>gradient magnitude</strong> (Sobel <code>Gx, Gy</code>) and use
-        <strong>normalized cross-correlation (NCC)</strong> over the interior to estimate shifts.
+        then align Red and Blue to Green with a multi-scale pyramid and evaluate similarity with
+        <strong>normalized cross-correlation (NCC)</strong> on the <strong>interior crop</strong> to avoid border bias.
       </p>
-      <div class="note">
-        <strong>Implementation notes (edit me):</strong>
-        Pyramid schedule, search radii, interior crop for scoring, and border handling.
-      </div>
     </section>
 
     <!-- Naive single-scale -->
     <section class="card" style="margin-top:12px;">
       <h3>Naive Single-Scale Alignment</h3>
+      <div class="note">
+        <strong>Naive implementation:</strong> I search a fixed window of shifts <code>[−15, 15]</code> and pick the best
+        vertical/horizontal displacement by NCC (SSD gave similar results, so I omitted those images). I initially aligned
+        R and G to Blue, but switching to <strong>aligning both R and B to Green</strong> produced better results (Green tends to carry
+        strong scene structure). For scoring I crop off about <strong>10%</strong> on each side to suppress chromatic border artifacts.
+        With this setup, small <strong>.jpg</strong> plates align perfectly in under a second. On large <strong>.tif</strong> plates the ±15 window
+        can be too small, and simply enlarging it makes the exhaustive search too slow.
+      </div>
       <div class="two-col" style="margin-top:10px;">
         <figure class="thumb">
           <img src="./media/cathedral_out_naive.png" alt="Cathedral naive" />
@@ -111,27 +114,31 @@
           </figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/monastery_out_naive.png" alt="Monastery naive" />
+          <img src="./media/monastery_out__naive.png" alt="Monastery naive" />
           <figcaption class="muted">
             Naive (no pyramid/features) — B:(3, -2)  R:(6, 1)
           </figcaption>
         </figure>
       </div>
-      <div class="note">Why naive fails (brightness differences, borders, local minima)…</div>
     </section>
 
     <!-- Image pyramid -->
     <section class="card" style="margin-top:12px;">
-      <h3>Image Pyramid + Gradient NCC</h3>
+      <h3>Image Pyramid (Raw-Intensity NCC)</h3>
       <div class="note">
-        <strong>Method:</strong> levels, reuse of coarse shifts, NCC over gradient magnitude for exposure invariance.
+        <strong>Pyramid approach:</strong> I build a coarse-to-fine pyramid by bilinear, anti-aliased downsampling until the
+        smaller side falls below a <code>min_size</code> (e.g., 64 px). At each level, channels are aligned using <strong>raw grayscale
+        intensities</strong> and NCC on the <strong>interior 80%</strong> (≈10% crop on all sides). I start at the coarsest level, take the best
+        shift, <strong>scale it by 2</strong> to initialize the next level, and refine in a smaller window. The search radius halves
+        per level and is capped around ±40 px (typically much less). In practice, <strong>.jpg</strong> plates finish in &lt;1 s; large
+        <strong>.tif</strong> plates take ~30 s per image on my setup.
       </div>
     </section>
 
     <!-- Gallery A: Pyramid (raw) -->
     <section class="card" style="margin-top:12px;">
       <h3>Results — Pyramid Alignment (Raw)</h3>
-      <p class="muted">Direct RGB composites from the gradient-NCC pipeline (no post-processing).</p>
+      <p class="muted">Direct RGB composites from the pyramid (no post-processing).</p>
       <div class="gallery" style="margin-top:10px;">
         <figure class="thumb"><img src="./media/brick_building_pyr.png" alt="brick_building (pyr)"><figcaption>brick_building — B:(-44, 12)  R:(56, -15) • 29.59s</figcaption></figure>
         <figure class="thumb"><img src="./media/cathedral_pyr.png" alt="cathedral (pyr)"><figcaption>cathedral — B:(-5, -2)  R:(7, 1) • 0.32s</figcaption></figure>
@@ -141,7 +148,7 @@
         <figure class="thumb"><img src="./media/harvesters_pyr.png" alt="harvesters (pyr)"><figcaption>harvesters — B:(-59, -17)  R:(65, -3) • 23.76s</figcaption></figure>
         <figure class="thumb"><img src="./media/icon_pyr.png" alt="icon (pyr)"><figcaption>icon — B:(-41, -17)  R:(48, 5) • 23.96s</figcaption></figure>
 
-        <figure class="thumb"><img src="./media/italli_pyr.png" alt="italli (pyr)"><figcaption>italli — B:(-38, -21)  R:(39, 15) • 22.75s</figcaption></figure>
+        <figure class="thumb"><img src="./media/italil_pyr.png" alt="italil (pyr)"><figcaption>italil — B:(-38, -21)  R:(39, 15) • 22.75s</figcaption></figure>
         <figure class="thumb"><img src="./media/lastochikino_pyr.png" alt="lastochikino (pyr)"><figcaption>lastochikino — B:(3, 2)  R:(78, -7) • 24.97s</figcaption></figure>
         <figure class="thumb"><img src="./media/lugano_pyr.png" alt="lugano (pyr)"><figcaption>lugano — B:(-41, 16)  R:(52, -13) • 24.77s</figcaption></figure>
 
@@ -156,14 +163,25 @@
         <figure class="thumb"><img src="./media/three_generations_pyr.png" alt="three_generations (pyr)"><figcaption>three_generations — B:(-52, -14)  R:(59, -3) • 22.76s</figcaption></figure>
         <figure class="thumb"><img src="./media/tobolsk_pyr.png" alt="tobolsk (pyr)"><figcaption>tobolsk — B:(-3, -3)  R:(4, 1) • 0.37s</figcaption></figure>
       </div>
-      <div class="note">Observations and any tricky alignments that still needed tuning.</div>
     </section>
 
     <!-- ================== Individual Bells BEFORE the full bells gallery ================== -->
 
     <!-- Auto-cropping -->
     <section class="card" style="margin-top:12px;">
-      <h3>Bell 1 — Automatic Cropping</h3>
+      <h3>1 — Automatic Cropping</h3>
+      <div class="note">
+        I first tried Sobel on a contrast-stretched grayscale image and scanned inward from each side, but with multiple
+        colored bands it tended to stop at the <em>first</em> strong band it saw, so it under-cropped—especially on the sides.
+        I then switched to a <strong>Laplacian</strong> edge map (after a light blur), computed per color channel and combined,
+        which reacts to sharp transitions regardless of color and handled mixed-color frames better. I also added a simple
+        <strong>darkness profile</strong> so nearly black borders count even when their edges are soft. Both signals are measured in
+        central stripes and normalized to interior medians, so the threshold adapts per image. Instead of cutting at the first
+        threshold crossing, I smooth the 1D scores, require <strong>K consecutive</strong> rows/columns above threshold, scan the whole
+        margin, keep the <strong>last</strong> qualifying run, and crop just past it. In short: don’t cut until I’ve seen the whole border
+        zone and found the last thing that still looks like a border. This was trickier than expected—balancing removal of
+        colored frames while not trimming real content (e.g., a uniform sky) required careful tuning.
+      </div>
       <div class="compare" style="margin-top:10px;">
         <div class="pane">
           <h4>Before (Pyramid)</h4>
@@ -182,12 +200,17 @@
           <img src="./media/three_generations_pyr_bells_crop.png" alt="three_generations cropped" />
         </div>
       </div>
-      <div class="note">Method: edge profiles + interior thresholds; scan-in until consistent high edge energy; cap max crop. Notes & tuning here.</div>
     </section>
 
     <!-- Contrast -->
     <section class="card" style="margin-top:12px;">
-      <h3>Bell 2 — Automatic Contrast</h3>
+      <h3>2 — Color Contrasting</h3>
+      <div class="note">
+        I tried both global and per-channel percentile stretching. <strong>Per-channel 1–99%</strong> worked best overall: it lifted shadows
+        and controlled highlights without fighting later color-cast correction. A global stretch sometimes preserved a tint
+        (treating all channels together), so skies/foliage stayed too blue/green. More aggressive 2–98% began to clip small
+        bright details; 1–99% was a safer default. I apply contrast <strong>after</strong> alignment/cropping so boosted edges don’t bias the match.
+      </div>
       <div class="compare" style="margin-top:10px;">
         <div class="pane">
           <h4>Before (Pyramid)</h4>
@@ -206,12 +229,19 @@
           <img src="./media/lugano_pyr_bells_contrast.png" alt="lugano after contrast" />
         </div>
       </div>
-      <div class="note">Percentile stretch (low/high), per-channel vs global; prevention of clipping.</div>
     </section>
 
     <!-- White Balance -->
     <section class="card" style="margin-top:12px;">
-      <h3>Bell 3 — White Balance</h3>
+      <h3>3 — White Balancing</h3>
+      <div class="note">
+        <strong>Gray-World</strong> (match channel means) underperformed: the “average scene ≈ gray” assumption isn’t true here—many images
+        are dominated by blue sky, green vegetation, or strong costume colors, and border damage can skew means. It often
+        <em>over-corrected</em> toward an inappropriate neutral. Switching to <strong>Max-RGB</strong> (equalize the ~99th percentile per channel)
+        worked better because it anchors on highlights that are usually intended to be neutral (stone, clouds, white cloth).
+        Using a percentile avoids hot pixels/scratches. Caveat: if the brightest areas aren’t neutral (e.g., warm highlights),
+        Max-RGB can push slightly cool, but across this dataset it produced more stable, natural whites.
+      </div>
       <div class="compare" style="margin-top:10px;">
         <div class="pane">
           <h4>Before (Pyramid)</h4>
@@ -230,12 +260,17 @@
           <img src="./media/melons_pyr_bells_white_balancing.png" alt="melons after WB" />
         </div>
       </div>
-      <div class="note">Gray-world vs Max-RGB; chosen percentile; when WB helps vs hurts.</div>
     </section>
 
     <!-- Better Color Mapping -->
     <section class="card" style="margin-top:12px;">
-      <h3>Bell 4 — Better Color Mapping (3×3 Linear Mix)</h3>
+      <h3>4 — Color Mapping (3×3 Linear Mix)</h3>
+      <div class="note">
+        There’s no guarantee the historical filters map 1:1 to modern RGB. I used a <strong>near-identity 3×3</strong> mix (row-sum=1)
+        with a small cross-talk (≈<strong>10%</strong>) so each channel gets a tiny contribution from the others. This reduced odd tints without
+        changing brightness much. Stronger mixes (≥0.15) looked oversaturated, so a subtle mix worked best. This tweak helps, but
+        compared to cropping/WB it’s a smaller visual change.
+      </div>
       <div class="compare" style="margin-top:10px;">
         <div class="pane">
           <h4>Before (Pyramid)</h4>
@@ -254,23 +289,28 @@
           <img src="./media/cathedral_pyr_bells_color_channels.png" alt="cathedral after color mix" />
         </div>
       </div>
-      <div class="note">Near-identity 3×3 with small cross-talk (row-sum=1). Why it complements WB.</div>
     </section>
 
     <!-- Better Features (reference to alignment) -->
     <section class="card" style="margin-top:12px;">
-      <h3>Bell 5 — Better Features for Alignment</h3>
+      <h3>5 — Better Features (Gradient Magnitude)</h3>
+      <div class="note">
+        Raw-pixel NCC worked, but some bright images aligned while still looking a bit <em>soft</em>—likely small residual misalignment.
+        Switching the pyramid to <strong>gradient magnitude (Sobel √(Gx²+Gy²)) + NCC</strong> made a visible difference on high-key scenes,
+        notably <strong>statue.tif</strong>: edges became crisper once channels were aligned by structure rather than intensity. Gradients are
+        more exposure-insensitive, so the matcher locks onto edges instead of being distracted by brightness differences. Low-texture
+        regions still give weaker cues, but overall sharpness improved on several plates.
+      </div>
       <div class="compare" style="margin-top:10px;">
         <div class="pane">
           <h4>Before (Naive)</h4>
-          <img src="./media/cathedral_out_naive.png" alt="cathedral naive" />
+          <img src="./media/statue_pyr.png" alt="statue naive" />
         </div>
         <div class="pane">
-          <h4>After (Gradient-NCC)</h4>
-          <img src="./media/cathedral_pyr.png" alt="cathedral gradient-NCC" />
+          <h4>After (Gradient)</h4>
+          <img src="./media/statue_pyr.png" alt="statue gradient-NCC" />
         </div>
       </div>
-      <div class="note">Why gradients + NCC (exposure invariance), pyramid schedule, search windows, runtime.</div>
     </section>
 
     <!-- ================== Full “bells” gallery AFTER individual sections ================== -->
@@ -307,9 +347,10 @@
     <section class="card" style="margin-top:12px;">
       <h3>Takeaways</h3>
       <ul class="muted">
-        <li>Gradient-NCC reduces sensitivity to exposure & borders.</li>
-        <li>Auto-crop prevents frames from biasing alignment and cleans presentation.</li>
-        <li>WB + gentle 3×3 mixing produce natural color without heavy tuning.</li>
+        <li>Pyramid NCC with interior-only scoring is reliable; gradient features sharpen tough, bright scenes.</li>
+        <li>Laplacian + darkness + “last-run” scanning fixes under-cropping from multi-band frames.</li>
+        <li>Max-RGB White Balancing and subtle 3×3 color mixing give natural color without heavy tuning.</li>
+        <li>Fun project!</li>
       </ul>
     </section>
   </main>
