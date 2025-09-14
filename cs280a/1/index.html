@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P1 — Colorizing the Prokudin-Gorskii Collection</title>
+  <meta name="description" content="Project 1 (CS 280A): split glass-plate images into B/G/R, align with a pyramid (NCC on gradients), and add automatic post-processing." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Sarah Kiefer</h1>
+      <nav aria-label="Primary">
+        <div class="hamburger" aria-label="Toggle navigation" role="button" tabindex="0">
+          <span></span><span></span><span></span>
+        </div>
+        <ul>
+          <li><a href="/" data-nav="home">Home</a></li>
+          <li><a href="/about.html" data-nav="about">About</a></li>
+          <li><a href="/cs280a/" data-nav="cs280a">CS 280A Projects</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="muted" style="margin:14px 0;"><a href="/cs280a/">← Back to CS 280A</a></p>
+
+    <h2>Project 1: Colorizing the Prokudin-Gorskii Collection</h2>
+    <p class="muted">CS 280A — Computer Vision and Computational Photography</p>
+
+    <!-- Overview -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Overview</h3>
+      <p>
+        Each glass plate holds three grayscale exposures (B, G, R). I split the plate vertically into thirds,
+        then align Red and Blue to Green using a coarse-to-fine pyramid. At each level I compute
+        <strong>gradient magnitude</strong> (<code>√(Gx² + Gy²)</code> via Sobel) and use
+        <strong>normalized cross-correlation (NCC)</strong> over the interior to estimate the shift.
+      </p>
+      <ul class="muted">
+        <li><strong>Features:</strong> Sobel gradients → gradient magnitude.</li>
+        <li><strong>Search:</strong> pyramid refinement with small windows around the current estimate.</li>
+        <li><strong>Extras:</strong> optional auto-crop, gentle 3×3 color mixing, white balance, and contrast.</li>
+      </ul>
+    </section>
+
+    <!-- Baselines -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Baselines</h3>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card">
+          <img src="./media/cathedral_out_naive.png" alt="Cathedral naive alignment" />
+          <figcaption class="muted">Naive (no pyramid/features) — misalignment visible.</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="./media/monastery_out_naive.png" alt="Monastery naive alignment" />
+          <figcaption class="muted">Another naive failure case.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Gallery A: Pyramid (raw aligned) -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Results — Pyramid Alignment (raw)</h3>
+      <p class="muted">Direct RGB composites from the gradient-NCC pipeline (no post-processing).</p>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card"><img src="./media/brick_building_pyr.png" alt="brick_building (pyr)" /></figure>
+        <figure class="card"><img src="./media/cathedral_pyr.png" alt="cathedral (pyr)" /></figure>
+        <figure class="card"><img src="./media/church_pyr.png" alt="church (pyr)" /></figure>
+
+        <figure class="card"><img src="./media/emir_pyr.png" alt="emir (pyr)" /></figure>
+        <figure class="card"><img src="./media/harvesters_pyr.png" alt="harvesters (pyr)" /></figure>
+        <figure class="card"><img src="./media/icon_pyr.png" alt="icon (pyr)" /></figure>
+
+        <figure class="card"><img src="./media/italli_pyr.png" alt="italli (pyr)" /></figure>
+        <figure class="card"><img src="./media/lastochikino_pyr.png" alt="lastochikino (pyr)" /></figure>
+        <figure class="card"><img src="./media/lugano_pyr.png" alt="lugano (pyr)" /></figure>
+
+        <figure class="card"><img src="./media/melons_pyr.png" alt="melons (pyr)" /></figure>
+        <figure class="card"><img src="./media/monastery_pyr.png" alt="monastery (pyr)" /></figure>
+        <figure class="card"><img src="./media/polevye_maki_pyr.png" alt="polevye_maki (pyr)" /></figure>
+
+        <figure class="card"><img src="./media/self_portrait_pyr.png" alt="self_portrait (pyr)" /></figure>
+        <figure class="card"><img src="./media/siren_pyr.png" alt="siren (pyr)" /></figure>
+        <figure class="card"><img src="./media/statue_pyr.png" alt="statue (pyr)" /></figure>
+
+        <figure class="card"><img src="./media/three_generations_pyr.png" alt="three_generations (pyr)" /></figure>
+        <figure class="card"><img src="./media/tobolsk_pyr.png" alt="tobolsk (pyr)" /></figure>
+      </div>
+    </section>
+
+    <!-- Gallery B: Pyramid + Bells -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Results — Pyramid + Bells &amp; Whistles</h3>
+      <p class="muted">Same images with optional automatic post-processing.</p>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card"><img src="./media/brick_building_pyr_bells.png" alt="brick_building (bells)" /></figure>
+        <figure class="card"><img src="./media/cathedral_pyr_bells.png" alt="cathedral (bells)" /></figure>
+        <figure class="card"><img src="./media/church_pyr_bells.png" alt="church (bells)" /></figure>
+
+        <figure class="card"><img src="./media/emir_pyr_bells.png" alt="emir (bells)" /></figure>
+        <figure class="card"><img src="./media/harvesters_pyr_bells.png" alt="harvesters (bells)" /></figure>
+        <figure class="card"><img src="./media/icon_pyr_bells.png" alt="icon (bells)" /></figure>
+
+        <figure class="card"><img src="./media/italli_pyr_bells.png" alt="italli (bells)" /></figure>
+        <figure class="card"><img src="./media/lastochikino_pyr_bells.png" alt="lastochikino (bells)" /></figure>
+        <figure class="card"><img src="./media/lugano_pyr_bells.png" alt="lugano (bells)" /></figure>
+
+        <figure class="card"><img src="./media/melons_pyr_bells.png" alt="melons (bells)" /></figure>
+        <figure class="card"><img src="./media/monastery_pyr_bells.png" alt="monastery (bells)" /></figure>
+        <figure class="card"><img src="./media/polevye_maki_pyr_bells.png" alt="polevye_maki (bells)" /></figure>
+
+        <figure class="card"><img src="./media/self_portrait_pyr_bells.png" alt="self_portrait (bells)" /></figure>
+        <figure class="card"><img src="./media/siren_pyr_bells.png" alt="siren (bells)" /></figure>
+        <figure class="card"><img src="./media/statue_pyr_bells.png" alt="statue (bells)" /></figure>
+
+        <figure class="card"><img src="./media/three_generations_pyr_bells.png" alt="three_generations (bells)" /></figure>
+        <figure class="card"><img src="./media/tobolsk_pyr_bells.png" alt="tobolsk (bells)" /></figure>
+      </div>
+    </section>
+
+    <!-- ---------- Individual Bells & Whistles ---------- -->
+
+    <!-- Auto-cropping -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 1 — Automatic Cropping</h3>
+      <p>
+        I detect and remove colored/black frames using edge-based profiles and interior-normalized thresholds,
+        scanning inward from each side. Notes &amp; parameters go here.
+      </p>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card"><img src="./media/cathedral_pyr_bells_crop.png" alt="cathedral auto-crop" /><figcaption class="muted">cathedral — cropped borders</figcaption></figure>
+        <figure class="card"><img src="./media/church_pyr_bells_crop.png" alt="church auto-crop" /><figcaption class="muted">church — cropped borders</figcaption></figure>
+        <figure class="card"><img src="./media/three_generations_pyr_bells_crop.png" alt="three_generations auto-crop" /><figcaption class="muted">three generations — cropped borders</figcaption></figure>
+      </div>
+      <details style="margin-top:8px;"><summary>Write-up notes</summary>
+        <ul class="muted">
+          <li>Feature used, thresholding rule, and max-crop cap.</li>
+          <li>Tricky cases &amp; how I tuned parameters.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Contrast -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 2 — Automatic Contrast</h3>
+      <p>
+        Percentile stretch per channel or jointly. I used low/high percentiles to avoid blowing out highlights.
+      </p>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card"><img src="./media/cathedral_pyr_bells_contrast.png" alt="cathedral contrast" /><figcaption class="muted">cathedral — contrast</figcaption></figure>
+        <figure class="card"><img src="./media/lugano_pyr_bells_contrast.png" alt="lugano contrast" /><figcaption class="muted">lugano — contrast</figcaption></figure>
+        <figure class="card"><img src="./media/polevye_maki_pyr_bells_contrast.png" alt="maki contrast" /><figcaption class="muted">maki — contrast</figcaption></figure>
+        <figure class="card"><img src="./media/emir_pyr_bells_contrast.png" alt="emir contrast" /><figcaption class="muted">emir — contrast</figcaption></figure>
+      </div>
+      <details style="margin-top:8px;"><summary>Write-up notes</summary>
+        <ul class="muted">
+          <li>Percentiles used; per-channel vs joint.</li>
+          <li>Failure cases &amp; mitigation.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- White Balance -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 3 — Automatic White Balance</h3>
+      <p>
+        I tried gray-world (scale channels to equal mean) and max-RGB (scale to equal high percentile).
+      </p>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card"><img src="./media/emir_pyr_bells_white_balancing.png" alt="emir WB" /><figcaption class="muted">emir — white balance</figcaption></figure>
+        <figure class="card"><img src="./media/lugano_pyr_bells_white_balancing.png" alt="lugano WB" /><figcaption class="muted">lugano — white balance</figcaption></figure>
+        <figure class="card"><img src="./media/melons_pyr_bells_white_balancing.png" alt="melons WB" /><figcaption class="muted">melons — white balance</figcaption></figure>
+        <figure class="card"><img src="./media/icon_pyr_bells_white_balancing.png" alt="icon WB" /><figcaption class="muted">icon — white balance</figcaption></figure>
+      </div>
+      <details style="margin-top:8px;"><summary>Write-up notes</summary>
+        <ul class="muted">
+          <li>Equation and chosen percentile for max-RGB.</li>
+          <li>When WB helps vs. when it hurts.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Better Color Mapping (linear mix) -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 4 — Better Color Mapping (3×3 Linear Mix)</h3>
+      <p>
+        Instead of assuming the lenses match sRGB exactly, I apply a near-identity 3×3 matrix that mixes a small
+        fraction of the other two channels into each output (stabilizes color without changing brightness).
+      </p>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card"><img src="./media/cathedral_pyr_bells_color_channels.png" alt="cathedral color mix" /><figcaption class="muted">cathedral — gentle channel mix</figcaption></figure>
+        <figure class="card"><img src="./media/icon_pyr_bells_color_channels.png" alt="icon color mix" /><figcaption class="muted">icon — gentle channel mix</figcaption></figure>
+        <figure class="card"><img src="./media/melons_pyr_bells_color_channels.png" alt="melons color mix" /><figcaption class="muted">melons — gentle channel mix</figcaption></figure>
+      </div>
+      <details style="margin-top:8px;"><summary>Write-up notes</summary>
+        <ul class="muted">
+          <li>Matrix form, parameter <code>s</code>, and why row-sum=1 preserves brightness.</li>
+          <li>Comparison vs. pure white balance.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Better Features (gradients/edges) -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 5 — Better Features for Alignment</h3>
+      <p>
+        I replace raw-intensity matching with <strong>gradient magnitude + NCC</strong>. This emphasizes edges and
+        makes the metric robust to global intensity changes and colored frames along the border.
+      </p>
+      <div class="projects" style="margin-top:10px;">
+        <figure class="card">
+          <img src="./media/cathedral_out_naive.png" alt="cathedral naive" />
+          <figcaption class="muted">Naive — intensity mismatch bleeds into the metric.</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="./media/cathedral_pyr.png" alt="cathedral gradient-NCC" />
+          <figcaption class="muted">Pyramid + gradient-NCC — sharp edges and clean windows.</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="./media/monastery_pyr.png" alt="monastery gradient-NCC" />
+          <figcaption class="muted">Another improvement on difficult detail.</figcaption>
+        </figure>
+      </div>
+      <details style="margin-top:8px;"><summary>Write-up notes</summary>
+        <ul class="muted">
+          <li>Feature map: Sobel Gx/Gy → magnitude; why NCC over SSD here.</li>
+          <li>Pyramid schedule; search windows; runtime.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Reflection / Takeaways -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Takeaways</h3>
+      <ul class="muted">
+        <li>Gradient-NCC reduced sensitivity to exposure differences and vignetted borders.</li>
+        <li>Auto-crop prevents borders from biasing alignment and improves aesthetics.</li>
+        <li>Light 3×3 color mixing plus WB yields natural colors with minimal tuning.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Sarah Kiefer — All Rights Reserved
+  </footer>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>
