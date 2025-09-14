@@ -4,15 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>P1 — Colorizing the Prokudin-Gorskii Collection</title>
-  <meta name="description" content="Split glass-plate images into B/G/R, align with a pyramid (NCC on gradients), and add automatic post-processing." />
+  <meta name="description" content="This project reconstructs color photos from Prokudin-Gorskii glass plates by splitting each image into B, G, and R thirds. I align Red and Blue to Green with a coarse-to-fine pyramid using raw pixel values naively and then gradient-magnitude features with normalized cross-correlation as a similarity metric. Finally, I apply simple post-processing—automatic border cropping, white balance, contrast stretch, and a gentle 3×3 color mix—to produce cleaner + sharper results." />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
-  <!-- Page-local styles to ensure smaller, tiled images even without site CSS -->
+
+  <!-- Local layout helpers -->
   <style>
+    /* ~2x bigger gallery cards */
     .gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 16px;
       align-items: start;
     }
     .thumb {
@@ -20,17 +22,26 @@
       border: 1px solid #e5e7eb;
       border-radius: .6rem;
       overflow: hidden;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
     }
-    .thumb img {
-      width: 100%;
-      height: auto;
-      display: block;
+    .thumb img { width: 100%; height: auto; display: block; }
+    .thumb figcaption { padding: 8px 10px; font-size: .95rem; color: #6b7280; }
+
+    /* side-by-side before/after comparisons */
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 18px;
+      align-items: start;
     }
-    .thumb figcaption {
-      padding: 8px 10px;
-      font-size: .9rem;
-      color: #6b7280;
+    .compare .pane { background:#fff; border:1px solid #e5e7eb; border-radius:.6rem; padding:14px; }
+    .compare h4 { margin:0 0 10px 0; }
+    .compare img { width:100%; height:auto; border-radius:.5rem; display:block; }
+
+    .two-col {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:14px;
     }
     .note {
       padding: 12px 14px;
@@ -40,14 +51,8 @@
       margin-top: 10px;
       color: #374151;
     }
-    .two-col {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 12px;
-      align-items: start;
-    }
     .muted { color:#6b7280; }
-    .card img { border-radius: .5rem; }
+    .card img { border-radius:.5rem; }
   </style>
 </head>
 <body>
@@ -78,13 +83,12 @@
       <h3>Overview</h3>
       <p>
         Each glass plate contains three grayscale exposures (B, G, R). I split the plate vertically into thirds,
-        then align Red and Blue to Green using a coarse-to-fine pyramid. At each level I compute
-        <strong>gradient magnitude</strong> (Sobel <code>Gx, Gy</code>) and use
-        <strong>normalized cross-correlation (NCC)</strong> to score shifts over the interior.
+        then align Red and Blue to Green using a coarse-to-fine pyramid. At each level I find the best shift using
+        <strong>normalized cross-correlation (NCC)</strong> over the interior to estimate shifts and propagate them up the pyramid.
       </p>
       <div class="note">
         <strong>Implementation notes (edit me):</strong>
-        Pyramid schedule, search radii, cropping for scoring, and handling borders.
+        Pyramid schedule, search radii, interior crop for scoring, and border handling.
       </div>
     </section>
 
@@ -94,21 +98,22 @@
       <div class="two-col" style="margin-top:10px;">
         <figure class="thumb">
           <img src="./media/cathedral_out_naive.png" alt="Cathedral naive" />
-          <figcaption class="muted">Naive (no pyramid/features) — visible color fringing.</figcaption>
+          <figcaption class="muted">Naive (no pyramid/features).</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/monastery_out_naive.png" alt="Monastery naive" />
-          <figcaption class="muted">Another naive failure case.</figcaption>
+          <img src="./media/monastery_out__naive.png" alt="Monastery naive" />
+          <figcaption class="muted">Naive (no pyramid/features).</figcaption>
         </figure>
+    
       </div>
-      <div class="note">Why naive fails here (brightness differences, borders, local minima)…</div>
+      <div class="note">Why naive fails (brightness differences, borders, local minima)…</div>
     </section>
 
     <!-- Image pyramid -->
     <section class="card" style="margin-top:12px;">
       <h3>Image Pyramid + Gradient NCC</h3>
       <div class="note">
-        <strong>Method (edit me):</strong> how levels are built, how previous shifts are upscaled, and why gradients make NCC robust to exposure/border changes.
+        <strong>Method:</strong> levels, reuse of coarse shifts, NCC over gradient magnitude for exposure invariance.
       </div>
     </section>
 
@@ -143,10 +148,124 @@
       <div class="note">Observations and any tricky alignments that still needed tuning.</div>
     </section>
 
-    <!-- Gallery B: Pyramid + Bells -->
+    <!-- ================== Individual Bells BEFORE the full bells gallery ================== -->
+
+    <!-- Auto-cropping -->
     <section class="card" style="margin-top:12px;">
-      <h3>Results — Pyramid + Bells &amp; Whistles</h3>
-      <p class="muted">Same images after optional automatic post-processing.</p>
+      <h3>Bell 1 — Automatic Cropping</h3>
+      <div class="compare" style="margin-top:10px;">
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/cathedral_pyr.png" alt="cathedral pyramid (before crop)" />
+        </div>
+        <div class="pane">
+          <h4>After (Cropped)</h4>
+          <img src="./media/cathedral_pyr_bells_crop.png" alt="cathedral cropped" />
+        </div>
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/three_generations_pyr.png" alt="three_generations pyramid (before crop)" />
+        </div>
+        <div class="pane">
+          <h4>After (Cropped)</h4>
+          <img src="./media/three_generations_pyr_bells_crop.png" alt="three_generations cropped" />
+        </div>
+      </div>
+      <div class="note">Method: edge profiles + interior thresholds; scan-in until consistent high edge energy; cap max crop. Notes & tuning here.</div>
+    </section>
+
+    <!-- Contrast -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 2 — Automatic Contrast</h3>
+      <div class="compare" style="margin-top:10px;">
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/cathedral_pyr.png" alt="cathedral before contrast" />
+        </div>
+        <div class="pane">
+          <h4>After (Contrast)</h4>
+          <img src="./media/cathedral_pyr_bells_contrast.png" alt="cathedral after contrast" />
+        </div>
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/lugano_pyr.png" alt="lugano before contrast" />
+        </div>
+        <div class="pane">
+          <h4>After (Contrast)</h4>
+          <img src="./media/lugano_pyr_bells_contrast.png" alt="lugano after contrast" />
+        </div>
+      </div>
+      <div class="note">Percentile stretch (low/high), per-channel vs global; prevention of clipping.</div>
+    </section>
+
+    <!-- White Balance -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 3 — White Balance</h3>
+      <div class="compare" style="margin-top:10px;">
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/lugano_pyr.png" alt="lugano before WB" />
+        </div>
+        <div class="pane">
+          <h4>After (WB)</h4>
+          <img src="./media/lugano_pyr_bells_white_balancing.png" alt="lugano after WB" />
+        </div>
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/melons_pyr.png" alt="melons before WB" />
+        </div>
+        <div class="pane">
+          <h4>After (WB)</h4>
+          <img src="./media/melons_pyr_bells_white_balancing.png" alt="melons after WB" />
+        </div>
+      </div>
+      <div class="note">Gray-world vs Max-RGB; chosen percentile; when WB helps vs hurts.</div>
+    </section>
+
+    <!-- Better Color Mapping -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 4 — Better Color Mapping (3×3 Linear Mix)</h3>
+      <div class="compare" style="margin-top:10px;">
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/icon_pyr.png" alt="icon before color mix" />
+        </div>
+        <div class="pane">
+          <h4>After (Color Mix)</h4>
+          <img src="./media/icon_pyr_bells_color_channels.png" alt="icon after color mix" />
+        </div>
+        <div class="pane">
+          <h4>Before (Pyramid)</h4>
+          <img src="./media/cathedral_pyr.png" alt="cathedral before color mix" />
+        </div>
+        <div class="pane">
+          <h4>After (Color Mix)</h4>
+          <img src="./media/cathedral_pyr_bells_color_channels.png" alt="cathedral after color mix" />
+        </div>
+      </div>
+      <div class="note">Near-identity 3×3 with small cross-talk (row-sum=1). Why it complements WB.</div>
+    </section>
+
+    <!-- Better Features (reference to alignment) -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Bell 5 — Better Features for Alignment</h3>
+      <div class="compare" style="margin-top:10px;">
+        <div class="pane">
+          <h4>Before (Naive)</h4>
+          <img src="./media/cathedral_out_naive.png" alt="cathedral naive" />
+        </div>
+        <div class="pane">
+          <h4>After (Gradient-NCC)</h4>
+          <img src="./media/cathedral_pyr.png" alt="cathedral gradient-NCC" />
+        </div>
+      </div>
+      <div class="note">Why gradients + NCC (exposure invariance), pyramid schedule, search windows, runtime.</div>
+    </section>
+
+    <!-- ================== Full “bells” gallery AFTER individual sections ================== -->
+    <section class="card" style="margin-top:12px;">
+      <h3>Results — Pyramid + Bells &amp; Whistles (All)</h3>
+      <p class="muted">Final auto-processed results for the full set.</p>
       <div class="gallery" style="margin-top:10px;">
         <figure class="thumb"><img src="./media/brick_building_pyr_bells.png" alt="brick_building bells"><figcaption>brick_building — bells</figcaption></figure>
         <figure class="thumb"><img src="./media/cathedral_pyr_bells.png" alt="cathedral bells"><figcaption>cathedral — bells</figcaption></figure>
@@ -156,7 +275,7 @@
         <figure class="thumb"><img src="./media/harvesters_pyr_bells.png" alt="harvesters bells"><figcaption>harvesters — bells</figcaption></figure>
         <figure class="thumb"><img src="./media/icon_pyr_bells.png" alt="icon bells"><figcaption>icon — bells</figcaption></figure>
 
-        <figure class="thumb"><img src="./media/italli_pyr_bells.png" alt="italli bells"><figcaption>italli — bells</figcaption></figure>
+        <figure class="thumb"><img src="./media/italil_pyr_bells.png" alt="italil bells"><figcaption>italil — bells</figcaption></figure>
         <figure class="thumb"><img src="./media/lastochikino_pyr_bells.png" alt="lastochikino bells"><figcaption>lastochikino — bells</figcaption></figure>
         <figure class="thumb"><img src="./media/lugano_pyr_bells.png" alt="lugano bells"><figcaption>lugano — bells</figcaption></figure>
 
@@ -171,71 +290,16 @@
         <figure class="thumb"><img src="./media/three_generations_pyr_bells.png" alt="three_generations bells"><figcaption>three_generations — bells</figcaption></figure>
         <figure class="thumb"><img src="./media/tobolsk_pyr_bells.png" alt="tobolsk bells"><figcaption>tobolsk — bells</figcaption></figure>
       </div>
-      <div class="note">What improved with bells (cropping, color, WB, contrast) and any tradeoffs.</div>
     </section>
 
-    <!-- Bells & Whistles: individual write-ups -->
+    <!-- Wrap-up -->
     <section class="card" style="margin-top:12px;">
-      <h3>Bell 1 — Automatic Cropping</h3>
-      <div class="two-col" style="margin-top:10px;">
-        <figure class="thumb"><img src="./media/cathedral_pyr_bells_crop.png" alt="cathedral crop"><figcaption>cathedral — cropped borders</figcaption></figure>
-        <figure class="thumb"><img src="./media/three_generations_pyr_bells_crop.png" alt="three_generations crop"><figcaption>three_generations — cropped borders</figcaption></figure>
-      </div>
-      <div class="note">Method (edge profiles, thresholds from interior, scan-in rule, max-crop cap). Failures & fixes.</div>
-    </section>
-
-    <section class="card" style="margin-top:12px;">
-      <h3>Bell 2 — Automatic Contrast</h3>
-      <div class="two-col" style="margin-top:10px;">
-        <figure class="thumb"><img src="./media/cathedral_pyr_bells_contrast.png" alt="cathedral contrast"><figcaption>cathedral — contrast</figcaption></figure>
-        <figure class="thumb"><img src="./media/lugano_pyr_bells_contrast.png" alt="lugano contrast"><figcaption>lugano — contrast</figcaption></figure>
-      </div>
-      <div class="note">Low/high percentiles, per-channel vs global, and aesthetic choices.</div>
-    </section>
-
-    <section class="card" style="margin-top:12px;">
-      <h3>Bell 3 — Automatic White Balance</h3>
-      <div class="gallery" style="margin-top:10px;">
-        <figure class="thumb"><img src="./media/emir_pyr_bells_white_balancing.png" alt="emir WB"><figcaption>emir — white balance</figcaption></figure>
-        <figure class="thumb"><img src="./media/melons_pyr_bells_white_balancing.png" alt="melons WB"><figcaption>melons — white balance</figcaption></figure>
-        <figure class="thumb"><img src="./media/lugano_pyr_bells_white_balancing.png" alt="lugano WB"><figcaption>lugano — white balance</figcaption></figure>
-        <figure class="thumb"><img src="./media/icon_pyr_bells_white_balancing.png" alt="icon WB"><figcaption>icon — white balance</figcaption></figure>
-      </div>
-      <div class="note">Gray-world vs Max-RGB; when it helps vs hurts. Percentile used.</div>
-    </section>
-
-    <section class="card" style="margin-top:12px;">
-      <h3>Bell 4 — Better Color Mapping (3×3 Linear Mix)</h3>
-      <div class="two-col" style="margin-top:10px;">
-        <figure class="thumb"><img src="./media/cathedral_pyr_bells_color_channels.png" alt="cathedral color mix"><figcaption>cathedral — subtle channel mixing</figcaption></figure>
-        <figure class="thumb"><img src="./media/icon_pyr_bells_color_channels.png" alt="icon color mix"><figcaption>icon — gentle color mix</figcaption></figure>
-      </div>
-      <div class="note">Matrix form, small s (e.g., 0.03–0.06), why rows sum to 1 (preserve brightness).</div>
-    </section>
-
-    <section class="card" style="margin-top:12px;">
-      <h3>Bell 5 — Better Features for Alignment</h3>
-      <div class="two-col" style="margin-top:10px;">
-        <figure class="thumb"><img src="./media/cathedral_pyr.png" alt="cathedral gradient-NCC"><figcaption>Gradient-NCC result</figcaption></figure>
-        <figure class="thumb"><img src="./media/monastery_pyr.png" alt="monastery gradient-NCC"><figcaption>Another gradient-NCC result</figcaption></figure>
-      </div>
-      <div class="note">Why gradients + NCC (exposure invariance), pyramid schedule, search windows, runtime.</div>
-    </section>
-
-    <!-- (Optional) Failures / Discussion -->
-    <section class="card" style="margin-top:12px;">
-      <h3>Failures &amp; Discussion</h3>
-      <div class="note">
-        Tough cases, borders at an angle, heavy saturation, or low texture; what I tried and future work.
-      </div>
-    </section>
-
-    <!-- (Optional) Appendix -->
-    <section class="card" style="margin-top:12px;">
-      <h3>Appendix — Implementation Details</h3>
-      <div class="note">
-        Cropping thresholds, feature-mode switches, constants, and per-image notes if needed.
-      </div>
+      <h3>Takeaways</h3>
+      <ul class="muted">
+        <li>Gradient-NCC reduces sensitivity to exposure & borders.</li>
+        <li>Auto-crop prevents frames from biasing alignment and cleans presentation.</li>
+        <li>WB + gentle 3×3 mixing produce natural color without heavy tuning.</li>
+      </ul>
     </section>
   </main>
 
