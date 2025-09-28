@@ -283,13 +283,12 @@
 
 <!-- 2.1 — Image Sharpening -->
 <section class="card" id="part-2-1">
-  <h3>2.1 — Image "Sharpening"</h3>
+  <h3>2.1 — Image Sharpening</h3>
 
-  <!-- Intro text like the screenshot -->
   <p>
     In this exercise, I explored how to sharpen images using frequency-based filtering. The idea is to
-    separate an image into its <strong>low-frequency</strong> (smooth, slowly varying content) and
-    <strong>high-frequency</strong> (edges and fine details) components.
+    separate an image into its <strong>low-frequency</strong> (slowly varying content) and
+    <strong>high-frequency</strong> (edges and fine details) parts.
   </p>
   <p>
     The Gaussian filter acts as a low-pass: it suppresses high-frequency details. Subtracting this blurred
@@ -297,13 +296,12 @@
     component back to the original enhances edges and makes the image appear “sharper.”
   </p>
 
-  <!-- Unsharp masking explainer -->
   <div class="note" style="margin-top:8px;">
-    <h4 style="margin:0 0 6px;">Unsharp Masking: Two-Step vs. Single Convolution</h4>
+    <h4 style="margin:0 0 6px;">Sharpening</h4>
     <p style="margin:6px 0;">The sharpening process can be described in two steps:</p>
     <ol style="margin:6px 0 10px 20px;">
-      <li>Blur the image with a Gaussian filter \( G_\sigma \).</li>
-      <li>Subtract the blur from the original to extract high frequencies, then add them back with scale \(\alpha\).</li>
+      <li>Blur the image with a Gaussian filter G.</li>
+      <li>Subtract the blur from the original to extract high frequencies, then add them back with scale alpha.</li>
     </ol>
     <p style="margin:6px 0;">Formally:</p>
     <pre style="margin:6px 0; padding:14px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:.55rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:1.05rem;">
@@ -312,52 +310,49 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
   </div>
 
   <style>
-    /* Local layout for the 4-wide row */
-    #part-2-1 .quad-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-    @media (max-width: 1000px){ #part-2-1 .quad-4 { grid-template-columns:repeat(2,1fr);} }
-    @media (max-width: 640px){ #part-2-1 .quad-4 { grid-template-columns:1fr;} }
-    #part-2-1 .thumb { background:#fff; border:1px solid #e5e7eb; border-radius:.55rem; overflow:hidden; }
+    /* Layout utilities for this section */
+    #part-2-1 .two-up {
+      display:grid; grid-template-columns:repeat(2, minmax(320px,1fr)); gap:16px;
+    }
+    @media (max-width: 900px){ #part-2-1 .two-up { grid-template-columns:1fr; } }
+
+    #part-2-1 .full {
+      margin-top:16px;
+    }
+
+    #part-2-1 .thumb {
+      background:#fff; border:1px solid #e5e7eb; border-radius:.55rem; overflow:hidden;
+    }
     #part-2-1 .thumb img { width:100%; height:auto; display:block; }
     #part-2-1 .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
-    #part-2-1 .placeholder { margin-top:8px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:.55rem; background:#fafafa; color:#374151; }
   </style>
 
-  <!-- Four images, in the order you requested -->
-  <div class="quad-4" style="margin-top:12px;">
-    <!-- 1: Berkeley three stages -->
-    <div>
-      <figure class="thumb">
-        <img src="./media/2.1berkeley_three_stages.png" alt="Berkeley — three stages">
-        <figcaption>Berkeley — three stages</figcaption>
-      </figure>
-      <!-- Comment placeholder after Berkeley three stages -->
-      <div class="placeholder"><strong>Comments (Berkeley three stages):</strong> overwrite this with your notes…</div>
-    </div>
-
-    <!-- 2: Taj Mahal alphas -->
+  <!-- Row 1: two-up (half page each) -->
+  <div class="two-up" style="margin-top:12px;">
     <figure class="thumb">
-      <img src="./media/2.1taj_mahal_alphas.png" alt="Taj Mahal — alphas">
-      <figcaption>Taj Mahal — alphas</figcaption>
+      <img src="./media/2.1berkeley_three_stages.png" alt="Berkeley — three stages">
+      <figcaption>Berkeley — three stages</figcaption>
     </figure>
 
-    <!-- 3: Berkeley alphas -->
     <figure class="thumb">
-      <img src="./media/2.1berkeley_alphas.png" alt="Berkeley — alphas">
-      <figcaption>Berkeley — alphas</figcaption>
+      <img src="./media/2.1taj_mahal_three_stages.png" alt="Taj Mahal — three stages">
+      <figcaption>Taj Mahal — three stages</figcaption>
     </figure>
-
-    <!-- 4: Waterfall alphas -->
-    <div>
-      <figure class="thumb">
-        <img src="./media/waterfall.jpg" alt="Waterfall — alphas">
-        <figcaption>Waterfall — alphas</figcaption>
-      </figure>
-      <!-- Comment placeholder after Waterfall alphas -->
-      <div class="placeholder"><strong>Explanation:</strong> overwrite this with your notes…</div>
-    </div>
   </div>
 
-  <!-- Your narrative description goes after the images -->
+  <!-- Row 2: full width -->
+  <figure class="thumb full">
+    <img src="./media/2.1taj_mahal_alphas.png" alt="Taj Mahal — alphas">
+    <figcaption>Taj Mahal — alphas</figcaption>
+  </figure>
+
+  <!-- Row 3: full width -->
+  <figure class="thumb full">
+    <img src="./media/waterfall.jpg" alt="Waterfall — alphas">
+    <figcaption>Waterfall — alphas</figcaption>
+  </figure>
+
+  <!-- Global comments for this section -->
   <div class="note" style="margin-top:14px;">
     The first thing I thought to do was to pick a sigma (standard deviation of the gaussian) that would be appropriate for the 300 x 300 pixel image. I saw that many of the details I wanted to extract were quite fine, maybe 2–5 pixels. I ultimately decided on a sigma of 1.5 which gives a kernel size of about 11 x 11 (similar to what I used earlier) which seemed to blur effectively enough so that the difference between the original image and the blurred image captured the highest frequencies (i.e. the taj majal’s structure and the bushes lining the path). Next I had to choose how much of these high frequencies to add back to the image (how much sharpness to add). I tried 4 different values [0.5, 1.0, 1.5, 2.0] and liked 0.5 the most visually since it did not look overly rigid or grainy but still managed to make the key features of the image sharper and more visually appealing.
     <br><br>
@@ -367,7 +362,7 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
     <pre style="margin:8px 0; padding:10px 12px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:.55rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">I + alpha (I - gaussian(I, sigma))  = (1 + alpha) * I - alpha * (gaussian(I, sigma))</pre>
     Since convolution is linear this can be one convolution with image I, if we define the convolution:
     <pre style="margin:8px 0; padding:10px 12px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:.55rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">(1 + alpha) * unit impulse kernel  - alpha * gaussian kernel</pre>
-    I picked a sharp waterfall image to try to sharpen further and it did get slightly sharper but also seemed to get somewhat more coarse. By coarse I mean that parts of the image looked a bit grainier, meaning that there are limits to how different the sharpening can make it. I picked a bigger sigma in order to blur more effectively since my image size was bigger (more pixels) to pick out the higher frequencies easier.
+    (Comments on Sharpening a Sharp Image): I picked a sharp waterfall image to try to sharpen further and it did get slightly sharper but also seemed to get somewhat more coarse. By coarse I mean that parts of the image looked a bit grainier, meaning that there are limits to how different the sharpening can make it. I picked a bigger sigma in order to blur more effectively since my image size was bigger (more pixels) to pick out the higher frequencies easier.
   </div>
 </section>
 
@@ -396,10 +391,18 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
         <figure class="thumb"><img src="./media/hybrid_catman_w_color.png" alt="hybrid nutmeg+derek"><figcaption>Hybrid — nutmeg + derek</figcaption></figure>
       </div>
 
-      <div class="note" style="margin-top:10px;">
-        <strong>Comments:</strong> σ choices, alignment, and where color helped (low vs high).
-      </div>
-    </section>
+        <div class="note" style="margin-top:10px;">
+        <strong>Comments:</strong>
+        Bells and Whistles comments mixed in (used color in the low-pass image only to avoid color halos).
+        I made hybrid images by low-pass filtering one image with a Gaussian blur and high-pass filtering the other (original − blurred), then aligning and adding them together.  
+        <br><br>
+        For <em>Derek + Nutmeg</em>. Derek worked best with a low-pass filter around σ≈3, while Nutmeg was sharper with a high-pass filter around σ≈12. This balance kept Derek’s face visible at a distance but showed Nutmeg’s whiskers and details up close. Using color only in the low-pass image avoided strange color halos.  
+        <br><br>
+        For <em>Oski + Grizzly</em>, I used σ≈4 (low) and σ≈15 (high). The result worked only if the head sizes were well aligned; otherwise there were double edges. Greyscale looked somewhat cleaner here since Oski is wearing a very loud shirt!
+        <br><br>
+        For <em>Jonah + Kanye</em>, I used σ≈2 (low) and σ≈10 (high). The result was a bit noisy up close, but the faces aligned well and the hybrid switched nicely between the two at different distances. I tried both color and greyscale versions; but the grayscale had weird coloring.
+        Overall, picking the right cutoff was key. Small σ values for the low-pass left too much detail, while very large σ values for the high-pass made the image look noisy. I found low σ≈2–5 and high σ≈10–20 were good ranges to start with. These choices made the hybrids switch clearly between the two images depending on viewing distance.
+        </div>
 
     <!-- 2.3 Frequency Analysis -->
     <section class="card" id="part-2-3">
