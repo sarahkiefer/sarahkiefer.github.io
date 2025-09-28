@@ -255,7 +255,7 @@
         }
     </style>
 
-    <div class="gallery">
+    <div class="note">
         <figure class="thumb">
         <img src="./media/1.3DoG_filters.png" alt="DoG filters">
         <figcaption>DoG filters</figcaption>
@@ -279,6 +279,33 @@
     </div>
     </div>
     </section>
+
+<!-- 1.4 — Bells and Whistles -->
+<section class="card" id="part-1-4">
+  <h3>1.4 — Bells and Whistles</h3>
+
+  <div class="two" style="margin-top:10px;">
+    <figure class="thumb">
+      <img src="./media/1.3bells_cameraman_gradient_orientation_hsv.png" alt="Gradient orientation HSV">
+      <figcaption>Gradient orientation visualization (HSV → RGB)</figcaption>
+    </figure>
+
+    <div class="note">
+      In order to visualize the directions of these gradients in a colorspace I first used the gradients to get 
+      the polar coordinates and then mapped those to the [0,1] range.  
+      <br><br>
+      I took the gradients and turned their angle into a color (hue) and their strength into brightness (value) 
+      in HSV. I then converted that HSV image to RGB to show the image. For the colormap I used cyan and red to 
+      represent gradients where it is brighter on the right/left, and purple/blue and yellow/green to represent 
+      where it is brighter above or below the current location.  
+      <br><br>
+      So a vertical contour will show either cyan or red depending on which side is brighter; a horizontal contour 
+      will show yellow/green or purple/blue. We see this in the image although some more diagonal lines are a mix — 
+      take the man’s nose for example which appears to have parts that are cyan and parts that are more green/yellow.
+    </div>
+  </div>
+</section>
+
 
 
 <!-- 2.1 — Image Sharpening -->
