@@ -269,11 +269,14 @@
         <figure class="thumb">
         <img src="./media/1.3cameraman_gaussian_blur_gradient_magnitude.png" alt="Blur → grad mag">
         <figcaption>Blur → grad mag</figcaption>
+          </figure>
         <!-- Your comments displayed directly below this image -->
-        <div class="longcap">
-            I constructed Gaussian filters using cv2.getGaussianKernel and then taking outer product with itself. I did a sweep of sigma values between 1-4 and about 1.6 seemed to perform best. This made sense to me since that would make the gaussian’s half width about 4 pixels and so the ultimate window you are looking at is then approximately 6*sigma + 1, which is about 11 pixels. This means for every pixel you are blurring you are using a relatively small window, but one that should capture most of the variability in greyscale. This gradient magnitude was much cleaner (I ended up using the 90th percentile as the threshold) since the noisy grass was gone once it was blurred. This showed me just how effective adding gaussian blur is in extracting accurate edge maps.
-        </div>
-        </figure>
+         <div class="note" style="margin-top:10px;">
+        <strong>Explanation.</strong>
+        <ul style="margin-top:6px;">
+        I constructed Gaussian filters using cv2.getGaussianKernel and then taking outer product with itself. I did a sweep of sigma values between 1-4 and about 1.6 seemed to perform best. This made sense to me since that would make the gaussian’s half width about 4 pixels and so the ultimate window you are looking at is then approximately 6*sigma + 1, which is about 11 pixels. This means for every pixel you are blurring you are using a relatively small window, but one that should capture most of the variability in greyscale. This gradient magnitude was much cleaner (I ended up using the 90th percentile as the threshold) since the noisy grass was gone once it was blurred. This showed me just how effective adding gaussian blur is in extracting accurate edge maps.
+        </ul>
+    </div>
     </div>
     </section>
 
