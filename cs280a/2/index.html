@@ -375,7 +375,7 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
 
   <!-- Row 3: full width -->
   <figure class="thumb full">
-    <img src="./media/waterfall.jpg" alt="Waterfall — alphas">
+    <img src="./media/2.1waterfall_alphas.png" alt="Waterfall — alphas">
     <figcaption>Waterfall — alphas</figcaption>
   </figure>
 
@@ -430,13 +430,7 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
         For <em>Jonah + Kanye</em>, I used σ≈2 (low) and σ≈10 (high). The result was a bit noisy up close, but the faces aligned well and the hybrid switched nicely between the two at different distances. I tried both color and greyscale versions; but the grayscale had weird coloring.
         Overall, picking the right cutoff was key. Small σ values for the low-pass left too much detail, while very large σ values for the high-pass made the image look noisy. I found low σ≈2–5 and high σ≈10–20 were good ranges to start with. These choices made the hybrids switch clearly between the two images depending on viewing distance.
         </div>
-
-    <!-- 2.3 Frequency Analysis -->
-    <section class="card" id="part-2-3">
-      <h3>2.3 — Frequency Analysis</h3>
-      <div class="two">
         <figure class="thumb"><img src="./media/hybrid_frequency_analysis.png" alt="Frequency analysis"><figcaption>Log-magnitude FFTs of inputs, filtered components, and hybrid</figcaption></figure>
-        <figure class="thumb"><img src="./media/oraple.png" alt="Oraple"><figcaption>Oraple — classic pyramid blend</figcaption></figure>
       </div>
       <div class="note" style="margin-top:10px;">
         <strong>Comments:</strong> What the spectra show at different scales.
@@ -444,14 +438,21 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
     </section>
 
     <!-- 2.4 Multiresolution Blending (Laplacian/Gaussian Stacks) -->
-    <section class="card" id="part-2-4">
-      <h3>2.4 — Multiresolution Blending (Gaussian/Laplacian Stacks)</h3>
+    <section class="card" id="part-2-3">
+      <h3>2.3 —Gaussian/Laplacian Stacks</h3>
       <figure class="thumb">
         <img src="./media/laplacian_blending_levels.png" alt="Laplacian blending levels" />
         <figcaption>Selected Laplacian levels for A·mask, B·(1−mask), level-wise sums, and final averaged contributions.</figcaption>
       </figure>
       <div class="note" style="margin-top:10px;">
-        <strong>Comments:</strong> Which levels carry edges vs shading; how the Gaussian mask stack affects seams.
+  <strong>Comments:</strong>  
+  I built both Gaussian and Laplacian stacks from scratch. The main idea of a stack is that unlike a pyramid, the images are <em>not downsampled</em> at each level — every level stays the same size as the original. To make the Gaussian stack, I repeatedly blurred the image with a Gaussian filter. This keeps the levels aligned pixel-by-pixel, just with progressively smoother detail.  
+  <br><br>
+  The Laplacian stack is then made by subtracting each blurred level from the previous one. This captures the band-pass (edges and fine details) at different scales, while the last level is just the heavily blurred Gaussian. Adding all Laplacian levels back together reconstructs the original image (which was helpful for debugging).
+  <br><br>
+  For the Oraple example, the Laplacian stack shows how fine details of the apple and orange are preserved at shallow levels, while broader color/shape differences appear in deeper levels. The Gaussian mask stack controls how much of each image contributes at each frequency. When summed, the results blend smoothly.
+</div>
+
       </div>
     </section>
 
@@ -484,16 +485,16 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
       </div>
 
       <div class="note" style="margin-top:10px;">
-        <strong>Comments:</strong> Mask design and feathering; where seams disappear; any artifacts.
-      </div>
-    </section>
+  <strong>Comments:</strong>  
+  For the apple + orange blend (“oraple”), I used a simple vertical step mask. This made sense because both images had a clear left/right structure, and the seam could fall naturally in the middle. Using a Gaussian stack for the mask blurred the transition so that the seam wasn’t harsh, and the textures of the apple and orange flowed together.
 
-    <!-- Appendix (optional) -->
-    <section class="card" id="appendix">
-      <h3>Appendix — Misc</h3>
-      <div class="gallery">
-        <figure class="thumb"><img src="./media/hybrid_catman.png" alt="Hybrid alt"><figcaption>Hybrid (alternate)</figcaption></figure>
-      </div>
+  For the moon + cheese, I designed a circular, feathered mask. The idea was to mimic the round shape of the moon and then fade in the cheese texture from the center. Without feathering, the seam was obvious, but with a Gaussian-blurred radial mask the textures mixed smoothly and the “moon made of cheese” illusion worked well.
+
+  For the tree + broccoli, I used a diagonal feathered mask. A straight vertical or horizontal seam looked artificial since the shapes didn’t align well. The diagonal mask let the top of the broccoli merge into the tree canopy more naturally. Feathering was especially important here, since the fine texture of the leaves would have made a hard seam very noticeable.
+
+  In all cases, the Gaussian stacks of the mask were critical: they softened the boundaries and eliminated harsh lines. The blends weren’t perfect—there are still slight artifacts where textures differ strongly (like the bark vs. broccoli stem), but overall the feathered masks allowed convincing composites.
+</div>
+
     </section>
   </main>
 
