@@ -466,7 +466,7 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
         <figure class="thumb"><img src="./media/tree.jpg" alt="Tree (original)"><figcaption>Tree (original)</figcaption></figure>
         <figure class="thumb"><img src="./media/broccoli.jpg" alt="Broccoli (original)"><figcaption>Broccoli (original)</figcaption></figure>
         <figure class="thumb"><img src="./media/tree_broccoli_mask_feathered_325.png" alt="Mask: tree↔broccoli"><figcaption>Mask</figcaption></figure>
-        <figure class="thumb"><img src="./media/tree_broccoli_blend.png" alt="Blend: tree↔broccoli"><figcaption>Final blend</figcaption></figure>
+        <figure class="thumb"><img src="./media/brok_tree.png" alt="Blend: tree↔broccoli"><figcaption>Final blend</figcaption></figure>
       </div>
 
       <!-- Row 2: Moon + Cheese -->
@@ -484,16 +484,27 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
         <figure class="thumb"><img src="./media/oraple.png" alt="Blend: apple↔orange"><figcaption>Final blend</figcaption></figure>
       </div>
 
-      <div class="note" style="margin-top:10px;">
-  <strong>Comments:</strong>  
-  For the apple + orange blend (“oraple”), I used a simple vertical step mask. This made sense because both images had a clear left/right structure, and the seam could fall naturally in the middle. Using a Gaussian stack for the mask blurred the transition so that the seam wasn’t harsh, and the textures of the apple and orange flowed together.
+<div class="note" style="margin-top:10px;">
+  <strong>Comments:</strong><br>
+  For the apple + orange blend, I used a vertical step mask. Using a Gaussian stack for the mask blurred the transition so that the seam wasn’t harsh, and the textures of the apple and orange looked seamless.
+  <br><br>
+  For the moon + cheese, I designed a circular, feathered mask. The idea was to mimic the round shape of the moon and then fade in the cheese texture from the center. Without feathering, the seam was obvious, but with a Gaussian-blurred radial mask the textures mixed smoothly.
+  <br><br>
+  For the tree + broccoli, I used a diagonal feathered mask. A straight vertical or horizontal seam looked artificial since the shapes didn’t align super well. The diagonal mask let the top of the broccoli merge into the tree more naturally.
+  <br><br>
+  The blends weren’t perfect—there are still slight artifacts where textures differ strongly (like the bark vs. broccoli stem), but overall the feathered masks allowed for convincing blending.
 
-  For the moon + cheese, I designed a circular, feathered mask. The idea was to mimic the round shape of the moon and then fade in the cheese texture from the center. Without feathering, the seam was obvious, but with a Gaussian-blurred radial mask the textures mixed smoothly and the “moon made of cheese” illusion worked well.
+  <hr style="margin:14px 0; border:none; border-top:1px solid #e5e7eb;">
 
-  For the tree + broccoli, I used a diagonal feathered mask. A straight vertical or horizontal seam looked artificial since the shapes didn’t align well. The diagonal mask let the top of the broccoli merge into the tree canopy more naturally. Feathering was especially important here, since the fine texture of the leaves would have made a hard seam very noticeable.
+  <strong>Bells + Whistles — Color:</strong>
+  <ul style="margin:8px 0 0 18px;">
+    <li>I kept <em>color in the low-frequency stacks</em> and used <em>grayscale for the high-frequency stacks</em>. This avoids chromatic ringing (halo shapes) around sharp edges while keeping hue smooth.</li>
+    <li><em>Moon + cheese:</em> slight desaturation in the moon’s low band and a radial Gaussian mask let the cheese’s warm yellows bleed in at the center without yellow halos on craters.</li>
+    <li><em>Tree + broccoli:</em> both green but different; I let the Gaussian stack taper the hue shift along a diagonal mask so color stays consistent while Laplacian bands carry only texture (leaves vs. florets).</li>
 
-  In all cases, the Gaussian stacks of the mask were critical: they softened the boundaries and eliminated harsh lines. The blends weren’t perfect—there are still slight artifacts where textures differ strongly (like the bark vs. broccoli stem), but overall the feathered masks allowed convincing composites.
+  </ul>
 </div>
+
 
     </section>
   </main>
