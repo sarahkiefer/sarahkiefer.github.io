@@ -222,16 +222,16 @@
         <ul style="margin-top:6px;">
         <li>
             I first convolved the <em>cameraman</em> image with finite-difference operators
-            \( D_x \) and \( D_y \) (using <code>scipy.signal.convolve2d</code>) to obtain horizontal and vertical
+            Dx and Dy (using <code>scipy.signal.convolve2d</code>) to obtain horizontal and vertical
             derivatives.
         </li>
         <li>
             I computed the gradient magnitude image as \( \sqrt{G_x^2 + G_y^2} \) using
-            <strong><code>np.hypot</code></strong> to combine \( G_x \) and \( G_y \).
+            <strong><code>np.hypot</code></strong> to combine Gx and Gy.
         </li>
         <li>
             To produce a binary edge image, I thresholded the gradient magnitude. I tried percentile thresholds
-            between **80** and **95** and preferred **95th percentile**: it removed most foreground noise,
+            between 80 and 95 and preferred 95th percentile: it removed most foreground noise,
             even though some weaker background edges disappeared. The tradeoff between noise and losing background edges was a balancing act, but I think getting rid of noise was most important even if we lost some of the flag in the background.
         </li>
         </ul>
@@ -242,63 +242,132 @@
         <!-- 1.3 — Derivative of Gaussian (DoG) Filter -->
     <section class="card" id="part-1-3">
     <h3>1.3 — Derivative of Gaussian (DoG) Filter</h3>
-    <div class="gallery">
-        <figure class="thumb"><img src="./media/1.3DoG_filters.png" alt="DoG filters"><figcaption>DoG filters</figcaption></figure>
-        <figure class="thumb"><img src="./media/1.3cameraman_gaussian_blur_edges.png" alt="Edges after blur"><figcaption>Edges after blur</figcaption></figure>
-        <figure class="thumb"><img src="./media/1.3cameraman_gaussian_blur_gradient_magnitude.png" alt="Blur → grad mag"><figcaption>Blur → grad mag</figcaption></figure>
-    </div>
-    </section>
 
-        <!-- 2.1 — Image Sharpening -->
-    <section class="card" id="part-2-1">
-    <h3>2.1 — Image Sharpening</h3>
-    <p class="muted">Row shows: Berkeley (three stages), Taj Mahal (alphas), Berkeley (alphas), Waterfall (alphas).</p>
-
+    <!-- Local style for a long caption under the third image -->
     <style>
-        /* Local layout for the 4-wide row */
-        #part-2-1 .quad-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-        @media (max-width: 1000px){ #part-2-1 .quad-4 { grid-template-columns:repeat(2,1fr);} }
-        @media (max-width: 640px){ #part-2-1 .quad-4 { grid-template-columns:1fr;} }
-        #part-2-1 .thumb { background:#fff; border:1px solid #e5e7eb; border-radius:.55rem; overflow:hidden; }
-        #part-2-1 .thumb img { width:100%; height:auto; display:block; }
-        #part-2-1 .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
-        #part-2-1 .placeholder { margin-top:8px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:.55rem; background:#fafafa; color:#374151; }
+        #part-1-3 .longcap {
+        padding: 8px 10px;
+        border-top: 1px solid #e5e7eb;
+        background: #fafafa;
+        color: #374151;
+        font-size: .95rem;
+        line-height: 1.45;
+        }
     </style>
 
-    <div class="quad-4" style="margin-top:10px;">
-        <!-- 1: Berkeley three stages -->
-        <div>
+    <div class="gallery">
         <figure class="thumb">
-            <img src="./media/2.1berkeley_three_stages.png" alt="Berkeley — three stages">
-            <figcaption>Berkeley — three stages</figcaption>
+        <img src="./media/1.3DoG_filters.png" alt="DoG filters">
+        <figcaption>DoG filters</figcaption>
         </figure>
-        <!-- Comment placeholder after Berkeley three stages -->
-        <div class="placeholder"><strong>Comments (Berkeley three stages):</strong> overwrite this with your notes…</div>
+
+        <figure class="thumb">
+        <img src="./media/1.3cameraman_gaussian_blur_edges.png" alt="Edges after blur">
+        <figcaption>Edges after blur</figcaption>
+        </figure>
+
+        <figure class="thumb">
+        <img src="./media/1.3cameraman_gaussian_blur_gradient_magnitude.png" alt="Blur → grad mag">
+        <figcaption>Blur → grad mag</figcaption>
+        <!-- Your comments displayed directly below this image -->
+        <div class="longcap">
+            I constructed Gaussian filters using cv2.getGaussianKernel and then taking outer product with itself. I did a sweep of sigma values between 1-4 and about 1.6 seemed to perform best. This made sense to me since that would make the gaussian’s half width about 4 pixels and so the ultimate window you are looking at is then approximately 6*sigma + 1, which is about 11 pixels. This means for every pixel you are blurring you are using a relatively small window, but one that should capture most of the variability in greyscale. This gradient magnitude was much cleaner (I ended up using the 90th percentile as the threshold) since the noisy grass was gone once it was blurred. This showed me just how effective adding gaussian blur is in extracting accurate edge maps.
         </div>
-
-        <!-- 2: Taj Mahal alphas -->
-        <figure class="thumb">
-        <img src="./media/2.1taj_mahal_alphas.png" alt="Taj Mahal — alphas">
-        <figcaption>Taj Mahal — alphas</figcaption>
         </figure>
-
-        <!-- 3: Berkeley alphas -->
-        <figure class="thumb">
-        <img src="./media/2.1berkeley_alphas.png" alt="Berkeley — alphas">
-        <figcaption>Berkeley — alphas</figcaption>
-        </figure>
-
-        <!-- 4: Waterfall alphas -->
-        <div>
-        <figure class="thumb">
-            <img src="./media/waterfall.jpg" alt="Waterfall — alphas">
-            <figcaption>Waterfall — alphas</figcaption>
-        </figure>
-        <!-- Comment placeholder after Waterfall alphas -->
-        <div class="placeholder"><strong>Comments (Waterfall alphas):</strong> overwrite this with your notes…</div>
-        </div>
     </div>
     </section>
+
+
+<!-- 2.1 — Image Sharpening -->
+<section class="card" id="part-2-1">
+  <h3>2.1 — Image "Sharpening"</h3>
+
+  <!-- Intro text like the screenshot -->
+  <p>
+    In this exercise, I explored how to sharpen images using frequency-based filtering. The idea is to
+    separate an image into its <strong>low-frequency</strong> (smooth, slowly varying content) and
+    <strong>high-frequency</strong> (edges and fine details) components.
+  </p>
+  <p>
+    The Gaussian filter acts as a low-pass: it suppresses high-frequency details. Subtracting this blurred
+    version from the original isolates the high-frequency component. Adding some scaled amount of that
+    component back to the original enhances edges and makes the image appear “sharper.”
+  </p>
+
+  <!-- Unsharp masking explainer -->
+  <div class="note" style="margin-top:8px;">
+    <h4 style="margin:0 0 6px;">Unsharp Masking: Two-Step vs. Single Convolution</h4>
+    <p style="margin:6px 0;">The sharpening process can be described in two steps:</p>
+    <ol style="margin:6px 0 10px 20px;">
+      <li>Blur the image with a Gaussian filter \( G_\sigma \).</li>
+      <li>Subtract the blur from the original to extract high frequencies, then add them back with scale \(\alpha\).</li>
+    </ol>
+    <p style="margin:6px 0;">Formally:</p>
+    <pre style="margin:6px 0; padding:14px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:.55rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:1.05rem;">
+I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
+    </pre>
+  </div>
+
+  <style>
+    /* Local layout for the 4-wide row */
+    #part-2-1 .quad-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+    @media (max-width: 1000px){ #part-2-1 .quad-4 { grid-template-columns:repeat(2,1fr);} }
+    @media (max-width: 640px){ #part-2-1 .quad-4 { grid-template-columns:1fr;} }
+    #part-2-1 .thumb { background:#fff; border:1px solid #e5e7eb; border-radius:.55rem; overflow:hidden; }
+    #part-2-1 .thumb img { width:100%; height:auto; display:block; }
+    #part-2-1 .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
+    #part-2-1 .placeholder { margin-top:8px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:.55rem; background:#fafafa; color:#374151; }
+  </style>
+
+  <!-- Four images, in the order you requested -->
+  <div class="quad-4" style="margin-top:12px;">
+    <!-- 1: Berkeley three stages -->
+    <div>
+      <figure class="thumb">
+        <img src="./media/2.1berkeley_three_stages.png" alt="Berkeley — three stages">
+        <figcaption>Berkeley — three stages</figcaption>
+      </figure>
+      <!-- Comment placeholder after Berkeley three stages -->
+      <div class="placeholder"><strong>Comments (Berkeley three stages):</strong> overwrite this with your notes…</div>
+    </div>
+
+    <!-- 2: Taj Mahal alphas -->
+    <figure class="thumb">
+      <img src="./media/2.1taj_mahal_alphas.png" alt="Taj Mahal — alphas">
+      <figcaption>Taj Mahal — alphas</figcaption>
+    </figure>
+
+    <!-- 3: Berkeley alphas -->
+    <figure class="thumb">
+      <img src="./media/2.1berkeley_alphas.png" alt="Berkeley — alphas">
+      <figcaption>Berkeley — alphas</figcaption>
+    </figure>
+
+    <!-- 4: Waterfall alphas -->
+    <div>
+      <figure class="thumb">
+        <img src="./media/waterfall.jpg" alt="Waterfall — alphas">
+        <figcaption>Waterfall — alphas</figcaption>
+      </figure>
+      <!-- Comment placeholder after Waterfall alphas -->
+      <div class="placeholder"><strong>Explanation:</strong> overwrite this with your notes…</div>
+    </div>
+  </div>
+
+  <!-- Your narrative description goes after the images -->
+  <div class="note" style="margin-top:14px;">
+    The first thing I thought to do was to pick a sigma (standard deviation of the gaussian) that would be appropriate for the 300 x 300 pixel image. I saw that many of the details I wanted to extract were quite fine, maybe 2–5 pixels. I ultimately decided on a sigma of 1.5 which gives a kernel size of about 11 x 11 (similar to what I used earlier) which seemed to blur effectively enough so that the difference between the original image and the blurred image captured the highest frequencies (i.e. the taj majal’s structure and the bushes lining the path). Next I had to choose how much of these high frequencies to add back to the image (how much sharpness to add). I tried 4 different values [0.5, 1.0, 1.5, 2.0] and liked 0.5 the most visually since it did not look overly rigid or grainy but still managed to make the key features of the image sharper and more visually appealing.
+    <br><br>
+    My first approach for given image I was:
+    <pre style="margin:8px 0; padding:10px 12px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:.55rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">I + alpha (I - gaussian(I, sigma))</pre>
+    In order to make these one operation I rearranged the equation:
+    <pre style="margin:8px 0; padding:10px 12px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:.55rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">I + alpha (I - gaussian(I, sigma))  = (1 + alpha) * I - alpha * (gaussian(I, sigma))</pre>
+    Since convolution is linear this can be one convolution with image I, if we define the convolution:
+    <pre style="margin:8px 0; padding:10px 12px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:.55rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">(1 + alpha) * unit impulse kernel  - alpha * gaussian kernel</pre>
+    I picked a sharp waterfall image to try to sharpen further and it did get slightly sharper but also seemed to get somewhat more coarse. By coarse I mean that parts of the image looked a bit grainier, meaning that there are limits to how different the sharpening can make it. I picked a bigger sigma in order to blur more effectively since my image size was bigger (more pixels) to pick out the higher frequencies easier.
+  </div>
+</section>
+
 
 
     <!-- 2.2 Hybrid Images -->
