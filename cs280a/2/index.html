@@ -59,30 +59,40 @@
 
     <h2>Project 2 — Fun with Frequencies &amp; Multiresolution Blending</h2>
     <p class="muted">CS 280A — Computer Vision &amp; Computational Photography</p>
-    <!-- 1.1 — Finite Difference Operator -->
+<!-- 1.1 — Finite Difference Operator -->
 <section class="card" id="part-1-1">
   <h3>1.1 — Finite Difference Operator</h3>
 
-  <!-- Results thumbnails (unchanged) -->
-  <div class="gallery">
-    <figure class="thumb">
-      <img src="./media/1.1box-9x9-blur.png" alt="Box blur 9x9">
-      <figcaption>Box blur (9×9)</figcaption>
-    </figure>
-    <figure class="thumb">
-      <img src="./media/1.1dx-horizontal-deriv.png" alt="dx">
-      <figcaption>Horizontal derivative (∂/∂x)</figcaption>
-    </figure>
-    <figure class="thumb">
-      <img src="./media/1.1dy-vertical-deriv.png" alt="dy">
-      <figcaption>Vertical derivative (∂/∂y)</figcaption>
-    </figure>
-  </div>
+  <!-- Local layout helpers just for this section -->
+  <style>
+    #part-1-1 .code-grid{
+      display:grid; grid-template-columns:repeat(2, minmax(320px, 1fr));
+      gap:16px; align-items:start;
+    }
+    #part-1-1 .code-card{
+      border:1px solid #e5e7eb; border-radius:.55rem; background:#fff; overflow:hidden;
+    }
+    #part-1-1 .code-card h4{
+      margin:0; padding:10px 12px; font-size:1rem; border-bottom:1px solid #eef2f7; background:#f9fafb;
+    }
+    #part-1-1 pre{
+      margin:0; padding:10px 12px; background:#0b1020; color:#e5e7eb;
+      max-height:300px; overflow:auto; font-size:.9rem; line-height:1.35;
+    }
+    #part-1-1 .single-col{
+      display:grid; grid-template-columns:1fr; gap:16px;
+    }
+    #part-1-1 figure.thumb{ background:#fff; border:1px solid #e5e7eb; border-radius:.55rem; overflow:hidden; }
+    #part-1-1 figure.thumb img{ display:block; width:100%; height:auto; }
+    #part-1-1 figure.thumb figcaption{ padding:8px 10px; color:#6b7280; font-size:.93rem; }
+    #part-1-1 .callout{ padding:10px 12px; border:1px solid #e5e7eb; border-radius:.55rem; background:#fafafa; color:#374151; }
+  </style>
 
-  <!-- Implementation: 4-loop -->
-  <div class="card" style="margin-top:16px;">
-    <h4>Implementation — 4-loop Convolution</h4>
-    <pre style="overflow:auto; padding:12px; background:#0b1020; color:#e5e7eb; border-radius:.5rem;"><code class="language-python">def convolution_4loops(
+  <!-- Code implementations (side-by-side, compact) -->
+  <div class="code-grid" style="margin-top:8px;">
+    <div class="code-card">
+      <h4>Implementation — 4-loop Convolution</h4>
+      <pre><code class="language-python">def convolution_4loops(
     img: np.ndarray,
     K: np.ndarray, #kernel
     use_padding: bool = True,
@@ -108,12 +118,11 @@
                 for kernel_col in range(kW):
                     out[out_row, out_col] += img[out_row + kernel_row, out_col + kernel_col] * K[kernel_row, kernel_col]
     return out</code></pre>
-  </div>
+    </div>
 
-  <!-- Implementation: 2-loop -->
-  <div class="card" style="margin-top:12px;">
-    <h4>Implementation — 2-loop Convolution</h4>
-    <pre style="overflow:auto; padding:12px; background:#0b1020; color:#e5e7eb; border-radius:.5rem;"><code class="language-python">def convolution_2loops(
+    <div class="code-card">
+      <h4>Implementation — 2-loop Convolution</h4>
+      <pre><code class="language-python">def convolution_2loops(
     img: np.ndarray,
     K: np.ndarray, #kernel
     use_padding: bool = True,
@@ -137,23 +146,54 @@
         for out_col in range(W):
             out[out_row, out_col] = np.sum(img[out_row:out_row + kH, out_col:out_col + kW] * K)
     return out</code></pre>
+    </div>
   </div>
 
-    <!-- Comments / analysis -->
-    <div class="note" style="margin-top:12px;">
-        <strong>Comments:</strong><br>
-        <strong>my 4-loop convolution takes about 50 seconds, with my 2-loop convolution taking 4seconds and the scipy convolve2d taking .231 seconds</strong><br><br>
+  <!-- Timings & implementation notes (overwrite as needed) -->
+  <div class="callout" style="margin-top:10px;">
+    <strong>Timing summary.</strong> <br>
+    my 4-loop convolution takes about 50 seconds, with my 2-loop convolution taking 4seconds and the scipy convolve2d taking .231 seconds
+    <br><br>
+    <strong>Why the 4-loop can beat the 2-loop (for tiny kernels).</strong> <br>
+    The 2-loop version is slower here because each iteration builds a slice view and a temporary product array for (window * K), which dominates when K is tiny. The 4-loop does just a few scalar mult-adds per pixel with no temp arrays—so it wins.
+  </div>
 
-        <strong>Both my implementations and scipy convolve2d have Box blur near borders getting darker (averaging in zeros with the padding).</strong><br><br>
-
-        <strong>For the finite differences, scipy was still the fastest with approx .017 seconds, followed by the 4-loop implementation (about 2 seconds), followed by the 2-loop implementation (about 4 seconds).</strong><br>
-        <strong>I asked myself why would the two loop implementation be slower than the 4 loop one here?</strong><br>
-        <strong>Answer:<br>
-        The 2-loop version is slower here because each iteration builds a slice view and a temporary product array for (window * K), which dominates when K is tiny. The 4-loop does just a few scalar mult-adds per pixel with no temp arrays—so it wins.</strong><br><br>
-
-        <strong>Derivatives (Dx/Dy) at the very edge tend to show large responses because the outside is 0.</strong>
+  <!-- Results: each image on its own line -->
+  <div class="single-col" style="margin-top:16px;">
+    <!-- Box blur -->
+    <figure class="thumb">
+      <img src="./media/1.1box-9x9-blur.png" alt="Box blur 9×9">
+      <figcaption>Box blur (9×9)</figcaption>
+    </figure>
+    <div class="callout">
+      Both my implementations and scipy convolve2d have Box blur near borders getting darker (averaging in zeros with the padding).
     </div>
-    </section>
+
+    <!-- Dx -->
+    <figure class="thumb">
+      <img src="./media/1.1dx-horizontal-deriv.png" alt="Horizontal derivative (∂/∂x)">
+      <figcaption>Horizontal derivative (∂/∂x)</figcaption>
+    </figure>
+
+    <!-- Dy -->
+    <figure class="thumb">
+      <img src="./media/1.1dy-vertical-deriv.png" alt="Vertical derivative (∂/∂y)">
+      <figcaption>Vertical derivative (∂/∂y)</figcaption>
+    </figure>
+
+    <!-- Finite-difference performance + edge behavior -->
+    <div class="callout">
+      For the finite differences, scipy was still the fastest with approx .017 seconds, followed by the 4-loop implementation (about 2 seconds), followed by the 2-loop implementation (about 4 seconds).
+      I asked myself why would the two loop implementation be slower than the 4 loop one here?
+      Answer:
+      The 2-loop version is slower here because each iteration builds a slice view and a temporary product array for (window * K), which dominates when K is tiny. The 4-loop does just a few scalar mult-adds per pixel with no temp arrays—so it wins.
+      <br><br>
+      Derivatives (Dx/Dy) at the very edge tend to show large responses because the outside is 0.
+    </div>
+  </div>
+</section>
+
+
     
 
     <!-- 1.2 Derivative of Gaussian -->
