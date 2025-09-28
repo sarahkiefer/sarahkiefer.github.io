@@ -194,36 +194,116 @@
 
     <!-- 1.2 Derivative of Gaussian -->
     <section class="card" id="part-1-2">
-      <h3>1.2 — Derivative of Gaussian (DoG)</h3>
-      <div class="gallery">
-        <figure class="thumb"><img src="./media/1.2cameraman_Gx_Gy.png" alt="Gx Gy"><figcaption>DoG Gx / Gy</figcaption></figure>
-        <figure class="thumb"><img src="./media/1.2cameraman_gradmag_edges.png" alt="Gradient magnitude edges"><figcaption>Gradient magnitude edges</figcaption></figure>
-      </div>
-      <div class="note" style="margin-top:10px;">
-        <strong>Comments:</strong> Compare plain differences vs DoG; discuss σ and noise suppression.
-      </div>
+    <h3>1.2 — Derivative of Gaussian (DoG)</h3>
+
+
+    <style>
+        #part-1-2 .gallery .big { grid-column: span 2; }
+        @media (max-width: 1000px){ #part-1-2 .gallery .big { grid-column: span 2; } }
+        @media (max-width: 640px){ #part-1-2 .gallery .big { grid-column: span 1; } }
+    </style>
+
+    <p><em>"I now applied the earlier finite difference operators (Dx/ Dy) to the cameraman image"</em></p>
+
+    <div class="gallery">
+        <figure class="thumb big">
+        <img src="./media/1.2cameraman_Gx_Gy.png" alt="Gx Gy">
+        <figcaption>DoG Gx / Gy</figcaption>
+        </figure>
+        <figure class="thumb big">
+        <img src="./media/1.2cameraman_gradmag_edges.png" alt="Gradient magnitude edges">
+        <figcaption>Gradient magnitude and binarized edge map</figcaption>
+        </figure>
+    </div>
+
+    <!-- Expanded, easy-to-read explanation based on your notes -->
+    <div class="note" style="margin-top:10px;">
+        <strong>Explanation.</strong>
+        <ul style="margin-top:6px;">
+        <li>
+            I first convolved the <em>cameraman</em> image with finite-difference operators
+            \( D_x \) and \( D_y \) (using <code>scipy.signal.convolve2d</code>) to obtain horizontal and vertical
+            derivatives.
+        </li>
+        <li>
+            I computed the gradient magnitude image as \( \sqrt{G_x^2 + G_y^2} \) using
+            <strong><code>np.hypot</code></strong> to combine \( G_x \) and \( G_y \).
+        </li>
+        <li>
+            To produce a binary edge image, I thresholded the gradient magnitude. I tried percentile thresholds
+            between **80** and **95** and preferred **95th percentile**: it removed most foreground noise,
+            even though some weaker background edges disappeared. The tradeoff between noise and losing background edges was a balancing act, but I think getting rid of noise was most important even if we lost some of the flag in the background.
+        </li>
+        </ul>
+    </div>
     </section>
 
-    <!-- 1.3 Image Sharpening -->
+
+        <!-- 1.3 — Derivative of Gaussian (DoG) Filter -->
     <section class="card" id="part-1-3">
-      <h3>1.3 — Image Sharpening</h3>
-      <div class="gallery">
+    <h3>1.3 — Derivative of Gaussian (DoG) Filter</h3>
+    <div class="gallery">
         <figure class="thumb"><img src="./media/1.3DoG_filters.png" alt="DoG filters"><figcaption>DoG filters</figcaption></figure>
         <figure class="thumb"><img src="./media/1.3cameraman_gaussian_blur_edges.png" alt="Edges after blur"><figcaption>Edges after blur</figcaption></figure>
         <figure class="thumb"><img src="./media/1.3cameraman_gaussian_blur_gradient_magnitude.png" alt="Blur → grad mag"><figcaption>Blur → grad mag</figcaption></figure>
-      </div>
-      <div class="two" style="margin-top:16px;">
-        <figure class="thumb"><img src="./media/berkeley.jpg" alt="Berkeley sharpen example"><figcaption>Sharpening example — Berkeley</figcaption></figure>
-        <figure class="thumb"><img src="./media/waterfall.jpg" alt="Waterfall sharpen example"><figcaption>Sharpening example — Waterfall</figcaption></figure>
-      </div>
-      <div class="note" style="margin-top:10px;">
-        <strong>Comments:</strong> Unsharp mask (or equivalent), σ/amount, artifacts/benefits.
-      </div>
+    </div>
     </section>
 
-    <!-- 2.1 Hybrid Images -->
+        <!-- 2.1 — Image Sharpening -->
     <section class="card" id="part-2-1">
-      <h3>2.1 — Hybrid Images</h3>
+    <h3>2.1 — Image Sharpening</h3>
+    <p class="muted">Row shows: Berkeley (three stages), Taj Mahal (alphas), Berkeley (alphas), Waterfall (alphas).</p>
+
+    <style>
+        /* Local layout for the 4-wide row */
+        #part-2-1 .quad-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+        @media (max-width: 1000px){ #part-2-1 .quad-4 { grid-template-columns:repeat(2,1fr);} }
+        @media (max-width: 640px){ #part-2-1 .quad-4 { grid-template-columns:1fr;} }
+        #part-2-1 .thumb { background:#fff; border:1px solid #e5e7eb; border-radius:.55rem; overflow:hidden; }
+        #part-2-1 .thumb img { width:100%; height:auto; display:block; }
+        #part-2-1 .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
+        #part-2-1 .placeholder { margin-top:8px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:.55rem; background:#fafafa; color:#374151; }
+    </style>
+
+    <div class="quad-4" style="margin-top:10px;">
+        <!-- 1: Berkeley three stages -->
+        <div>
+        <figure class="thumb">
+            <img src="./media/2.1berkeley_three_stages.png" alt="Berkeley — three stages">
+            <figcaption>Berkeley — three stages</figcaption>
+        </figure>
+        <!-- Comment placeholder after Berkeley three stages -->
+        <div class="placeholder"><strong>Comments (Berkeley three stages):</strong> overwrite this with your notes…</div>
+        </div>
+
+        <!-- 2: Taj Mahal alphas -->
+        <figure class="thumb">
+        <img src="./media/2.1taj_mahal_alphas.png" alt="Taj Mahal — alphas">
+        <figcaption>Taj Mahal — alphas</figcaption>
+        </figure>
+
+        <!-- 3: Berkeley alphas -->
+        <figure class="thumb">
+        <img src="./media/2.1berkeley_alphas.png" alt="Berkeley — alphas">
+        <figcaption>Berkeley — alphas</figcaption>
+        </figure>
+
+        <!-- 4: Waterfall alphas -->
+        <div>
+        <figure class="thumb">
+            <img src="./media/waterfall.jpg" alt="Waterfall — alphas">
+            <figcaption>Waterfall — alphas</figcaption>
+        </figure>
+        <!-- Comment placeholder after Waterfall alphas -->
+        <div class="placeholder"><strong>Comments (Waterfall alphas):</strong> overwrite this with your notes…</div>
+        </div>
+    </div>
+    </section>
+
+
+    <!-- 2.2 Hybrid Images -->
+    <section class="card" id="part-2-2">
+      <h3>2.2 — Hybrid Images</h3>
       <p class="muted">Each row: Source A, Source B, then the Hybrid (A high-freq + B low-freq).</p>
 
       <div class="tri-3" style="margin-top:10px;">
@@ -249,9 +329,9 @@
       </div>
     </section>
 
-    <!-- 2.2 Frequency Analysis -->
-    <section class="card" id="part-2-2">
-      <h3>2.2 — Frequency Analysis</h3>
+    <!-- 2.3 Frequency Analysis -->
+    <section class="card" id="part-2-3">
+      <h3>2.3 — Frequency Analysis</h3>
       <div class="two">
         <figure class="thumb"><img src="./media/hybrid_frequency_analysis.png" alt="Frequency analysis"><figcaption>Log-magnitude FFTs of inputs, filtered components, and hybrid</figcaption></figure>
         <figure class="thumb"><img src="./media/oraple.png" alt="Oraple"><figcaption>Oraple — classic pyramid blend</figcaption></figure>
@@ -261,9 +341,9 @@
       </div>
     </section>
 
-    <!-- 2.3 Multiresolution Blending (Laplacian/Gaussian Stacks) -->
-    <section class="card" id="part-2-3">
-      <h3>2.3 — Multiresolution Blending (Gaussian/Laplacian Stacks)</h3>
+    <!-- 2.4 Multiresolution Blending (Laplacian/Gaussian Stacks) -->
+    <section class="card" id="part-2-4">
+      <h3>2.4 — Multiresolution Blending (Gaussian/Laplacian Stacks)</h3>
       <figure class="thumb">
         <img src="./media/laplacian_blending_levels.png" alt="Laplacian blending levels" />
         <figcaption>Selected Laplacian levels for A·mask, B·(1−mask), level-wise sums, and final averaged contributions.</figcaption>
@@ -294,12 +374,11 @@
         <figure class="thumb"><img src="./media/moon_cheese.png" alt="Blend: cheese→moon"><figcaption>Final blend</figcaption></figure>
       </div>
 
-      <!-- Row 3: Fork + Spoon (Spork) -->
+      <!-- Row 3: Apple + Orange (Orple) -->
       <div class="quad-4" style="margin-top:16px;">
-        <figure class="thumb"><img src="./media/fork.jpg" alt="Fork (original)"><figcaption>Fork (original)</figcaption></figure>
-        <figure class="thumb"><img src="./media/spoon.jpg" alt="Spoon (original)"><figcaption>Spoon (original)</figcaption></figure>
-        <figure class="thumb"><img src="./media/spork_mask_simple_v2.png" alt="Mask: spork"><figcaption>Mask</figcaption></figure>
-        <figure class="thumb"><img src="./media/spork_blend.png" alt="Blend: spork"><figcaption>Final blend</figcaption></figure>
+        <figure class="thumb"><img src="./media/apple.jpeg" alt="Apple (original)"><figcaption>Apple (original)</figcaption></figure>
+        <figure class="thumb"><img src="./media/orange.jpeg" alt="Orange (original)"><figcaption>Orange (original)</figcaption></figure>
+        <figure class="thumb"><img src="./media/oraple.png" alt="Blend: apple↔orange"><figcaption>Final blend</figcaption></figure>
       </div>
 
       <div class="note" style="margin-top:10px;">
