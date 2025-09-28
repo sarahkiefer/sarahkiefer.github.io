@@ -152,11 +152,9 @@
   <!-- Timings & implementation notes (overwrite as needed) -->
   <div class="callout" style="margin-top:10px;">
     <strong>Timing summary.</strong> <br>
-    my 4-loop convolution takes about 50 seconds, with my 2-loop convolution taking 4seconds and the scipy convolve2d taking .231 seconds
+    My 4-loop convolution takes about 50 seconds, with my 2-loop convolution taking 4 seconds and the scipy convolve2d taking .231 seconds. Here it is clear that each of these versions is an order of magnitude faster than the last. I found it interesting how much faster scipy's convolve is, likely due to being heavily optimized code.
     <br><br>
-    <strong>Why the 4-loop can beat the 2-loop (for tiny kernels).</strong> <br>
-    The 2-loop version is slower here because each iteration builds a slice view and a temporary product array for (window * K), which dominates when K is tiny. The 4-loop does just a few scalar mult-adds per pixel with no temp arrays—so it wins.
-  </div>
+    </div>
 
   <!-- Results: each image on its own line -->
   <div class="single-col" style="margin-top:16px;">
@@ -166,7 +164,7 @@
       <figcaption>Box blur (9×9)</figcaption>
     </figure>
     <div class="callout">
-      Both my implementations and scipy convolve2d have Box blur near borders getting darker (averaging in zeros with the padding).
+      Both my implementations and scipy convolve2d have Box blur near borders getting darker (averaging in zeros with the padding). Overall these techniques all produce the same effect. Scipy's convolve2d has different options for padding, such as 'fill' (default): Similar to zero-padding, 'wrap': opposite edges connect, 'symm': Reflects pixels across boundaries, and 'constant': Uses a set constant value. I used 'fill' for this project to mimic zero-padding.
     </div>
 
     <!-- Dx -->
@@ -183,12 +181,10 @@
 
     <!-- Finite-difference performance + edge behavior -->
     <div class="callout">
-      For the finite differences, scipy was still the fastest with approx .017 seconds, followed by the 4-loop implementation (about 2 seconds), followed by the 2-loop implementation (about 4 seconds).
-      I asked myself why would the two loop implementation be slower than the 4 loop one here?
-      Answer:
-      The 2-loop version is slower here because each iteration builds a slice view and a temporary product array for (window * K), which dominates when K is tiny. The 4-loop does just a few scalar mult-adds per pixel with no temp arrays—so it wins.
+        Here we see the finite difference operators (Dy/Dx) successfully highlight horizontal/vertical edges, respectively.
+        We can also see that derivatives (Dx/Dy) at the very edge tend to show large responses because the outside is 0. This is expected for zero-padding, but in practice we might want to use a different padding strategy (e.g., reflect) to avoid this artifact.
       <br><br>
-      Derivatives (Dx/Dy) at the very edge tend to show large responses because the outside is 0.
+      
     </div>
   </div>
 </section>
