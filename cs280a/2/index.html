@@ -444,6 +444,10 @@ I<sub>sharp</sub> = I + α · ( I − ( I * G<sub>σ</sub> ) )
         <img src="./media/laplacian_blending_levels.png" alt="Laplacian blending levels" />
         <figcaption>Selected Laplacian levels for A·mask, B·(1−mask), level-wise sums, and final averaged contributions.</figcaption>
       </figure>
+            <figure class="thumb">
+        <img src="./media/laplacian_blending_levels_tree.png" alt="Laplacian blending levels" />
+        <figcaption>Selected Laplacian levels for A·mask, B·(1−mask), level-wise sums, and final averaged contributions.</figcaption>
+      </figure>
       <div class="note" style="margin-top:10px;">
   <strong>Comments:</strong>  
   I built both Gaussian and Laplacian stacks from scratch. The main idea of a stack is that unlike a pyramid, the images are <em>not downsampled</em> at each level — every level stays the same size as the original. To make the Gaussian stack, I repeatedly blurred the image with a Gaussian filter. This keeps the levels aligned pixel-by-pixel, just with progressively smoother detail.  
