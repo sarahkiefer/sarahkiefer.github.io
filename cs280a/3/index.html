@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P3 — Panoramic Image Stitching</title>
+  <meta name="description" content="Homographies, inverse warping with nearest/bilinear interpolation, rectification, and feathered blending for mosaics." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
+
+  <style>
+    :root { --gap:16px; --line:#e5e7eb; --muted:#6b7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:#111827; background:#f8fafc; }
+    header { background:#fff; border-bottom:1px solid var(--line); }
+    .wrap, .container { max-width:1100px; margin:0 auto; padding:0 14px; }
+    header h1 { margin:12px 0; font-size:22px; }
+    nav ul { list-style:none; display:flex; gap:14px; margin:0 0 12px; padding:0; }
+    nav a { text-decoration:none; color:#374151; }
+    h2 { margin:18px 0 6px; }
+    h3 { margin:0 0 10px; }
+    .muted { color:var(--muted); }
+    .card { background:#fff; border:1px solid var(--line); border-radius:.65rem; padding:16px; margin:16px 0; }
+    .note { padding:12px 14px; border:1px solid var(--line); border-radius:.6rem; background:#fafafa; color:#374151; }
+
+    /* Layout helpers */
+    .gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--gap); }
+    @media (max-width: 1000px){ .gallery{ grid-template-columns:repeat(2,1fr);} }
+    @media (max-width: 640px){ .gallery{ grid-template-columns:1fr;} }
+    .two { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--gap); }
+    @media (max-width: 820px){ .two{ grid-template-columns:1fr; } }
+
+    figure { margin:0; }
+    .thumb { background:#fff; border:1px solid var(--line); border-radius:.55rem; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+    .thumb img { width:100%; height:auto; display:block; }
+    .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
+    footer { max-width:1100px; margin:40px auto; padding:0 14px 30px; color:#6b7280; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Sarah Kiefer</h1>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="/">&larr; Home</a></li>
+          <li><a href="/cs280a/">CS 280A</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="muted" style="margin:14px 0;"><a href="/cs280a/">&larr; Back to CS 280A</a></p>
+
+    <h2>Project 3 — Panoramic Image Stitching</h2>
+    <p class="muted">CS 280A — Computer Vision &amp; Computational Photography</p>
+
+    <p class="note" style="margin-top:10px;">
+      This project builds panoramas by (i) collecting overlapping views with pure rotation, (ii) solving for homographies
+      using many point correspondences, (iii) inverse warping with <em>nearest</em> and <em>bilinear</em> interpolation, and (iv) feathered
+      alpha blending into a single mosaic. Important implementation choices I used throughout:
+      <ul style="margin:8px 0 0 18px;">
+        <li><strong>Pixel-center convention.</strong> I treat pixel centers as integer coordinates; corner math uses ±0.5 where needed.</li>
+        <li><strong>Inverse warping.</strong> Avoids holes by sampling the source via \(H^{-1}\) for every output pixel.</li>
+        <li><strong>Bilinear vs Nearest.</strong> Bilinear is slower but cleaner (less aliasing). I compare both with timings.</li>
+        <li><strong>Feathered weights.</strong> Images contribute most near their centers and taper at the borders for smooth seams.</li>
+      </ul>
+    </p>
+
+    <!-- A.1 -->
+    <section class="card" id="a1">
+      <h3>A.1 — Shoot the Pictures</h3>
+      <p>I captured three small sequences (bookcase, scenic viewpoint, and backyard shed) with ~40–70% overlap and fixed center of projection (camera rotates in place).</p>
+
+      <h4 style="margin:10px 0 6px;">Bookcase (subset)</h4>
+      <div class="gallery">
+        <figure class="thumb"><img src="./media/bookcase1.JPG" alt="bookcase1"><figcaption>bookcase1</figcaption></figure>
+        <figure class="thumb"><img src="./media/bookcase2.JPG" alt="bookcase2"><figcaption>bookcase2</figcaption></figure>
+      </div>
+
+      <h4 style="margin:16px 0 6px;">Viewpoint</h4>
+      <div class="gallery">
+        <figure class="thumb"><img src="./media/viewpointv2im1.JPG" alt="viewpoint 1"><figcaption>viewpoint v2 — 1</figcaption></figure>
+        <figure class="thumb"><img src="./media/viewpointv2im2.JPG" alt="viewpoint 2"><figcaption>viewpoint v2 — 2</figcaption></figure>
+        <figure class="thumb"><img src="./media/viewpointv2im3.JPG" alt="viewpoint 3"><figcaption>viewpoint v2 — 3</figcaption></figure>
+      </div>
+
+      <h4 style="margin:16px 0 6px;">Shed</h4>
+      <div class="gallery">
+        <figure class="thumb"><img src="./media/shedv2im2.JPG" alt="shed 2"><figcaption>shed v2 — 2</figcaption></figure>
+        <figure class="thumb"><img src="./media/shedv2im3.JPG" alt="shed 3"><figcaption>shed v2 — 3</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- A.2 -->
+    <section class="card" id="a2">
+      <h3>A.2 — Homography Matrix Computation</h3>
+      <p>
+        For each image pair, I assemble an overdetermined linear system \(A\,\mathbf{h}=\mathbf{b}\) by fixing the \((3,3)\) entry to 1 and
+        stacking two rows per correspondence. Solving with least squares yields the 8 free parameters of \(H\),
+        then I recover the full 3×3 matrix and normalize by \(H_{33}\).
+      </p>
+
+      <div class="two" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/A2correspondences.png" alt="Correspondences visualization">
+          <figcaption>Correspondences and side-by-side visualization (points/lines between matches).</figcaption>
+        </figure>
+        <div class="note">
+          <strong>Notes:</strong>
+          <ul style="margin:8px 0 0 18px;">
+            <li>My code uses <em>all</em> provided correspondences (not just 4) and tolerates large point sets.</li>
+            <li>After solving I report the linear system preview and the estimated homography \(H\).</li>
+            <li>Mean reprojection error (in pixels) is printed per pair to sanity-check click quality.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- A.3 -->
+    <section class="card" id="a3">
+      <h3>A.3 — Warp the Images &amp; Rectification</h3>
+      <p>
+        I implemented inverse warping with two interpolation modes:
+        <strong>Nearest Neighbor</strong> (round to the closest pixel) and <strong>Bilinear</strong> (weighted sum of the 4 neighbors).
+        The output canvas size is predicted by warping the 4 source corners through \(H\). For rectification, I map a skewed
+        quad in the original to a fronto-parallel rectangle.
+      </p>
+
+      <div class="two" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/A3reprojectionkitchen.png" alt="Kitchen: rectification">
+          <figcaption>Rectification of the hallway painting (original vs NN vs bilinear).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/A3reprojectioncooler.png" alt="Cooler: rectification">
+          <figcaption>Rectification of the cooler (top-down view).</figcaption>
+        </figure>
+      </div>
+
+      <div class="two" style="margin-top:16px;">
+        <figure class="thumb">
+          <img src="./media/A3timedkitchen.png" alt="Timing kitchen">
+          <figcaption>Kitchen: NN vs Bilinear timings and outputs.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/A3timedcooler.png" alt="Timing cooler">
+          <figcaption>Cooler: NN vs Bilinear timings and outputs.</figcaption>
+        </figure>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Trade-offs.</strong>
+        Nearest neighbor is fast but shows aliasing/jaggies; bilinear is slower yet much cleaner on edges and thin details.
+        I also ran into EXIF rotation differences between file viewers — I auto-transpose on load so pixel coordinates match my clicks.
+      </div>
+    </section>
+
+    <!-- A.4 -->
+    <section class="card" id="a4">
+      <h3>A.4 — Blend the Images into a Mosaic</h3>
+      <p>
+        I build a mosaic by chaining homographies into the first view’s coordinate frame, predicting a global canvas from all warped
+        corner boxes, and <em>inverse warping</em> each image into that canvas. For blending I use simple feathering:
+        an alpha mask that is high near the center of each warped image and falls to zero at its borders (weighted averaging at
+        every pixel). This removes hard seams without fancy pyramids and worked well for these scenes.
+      </p>
+
+      <div class="gallery" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/A4bookshelf.png" alt="Mosaic — bookcase">
+          <figcaption>Bookcase — feathered bilinear mosaic</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/A4viewpoint.png" alt="Mosaic — viewpoint">
+          <figcaption>Viewpoint — feathered bilinear mosaic</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/A4shed.png" alt="Mosaic — shed">
+          <figcaption>Shed — feathered bilinear mosaic</figcaption>
+        </figure>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Blending notes.</strong>
+        <ul style="margin:8px 0 0 18px;">
+          <li>I warp a <em>ones</em> image through the same homography to get an occupancy map, then multiply by a feather mask for the final alpha.</li>
+          <li>All images are accumulated in float32 and divided by the weight sum at the end (avoid exposure dips near seams).</li>
+          <li>For wide FOVs you could switch to cylindrical/spherical projection, but these 3–4-view panoramas were fine with planar homographies.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>© <span id="year"></span> Sarah Kiefer — All Rights Reserved</footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
