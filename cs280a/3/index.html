@@ -199,20 +199,31 @@
       </div>
     </div>
     <div>
-      <h4>System of Equations \((A \mid b)\)</h4>
-      <div style="overflow-x: auto; font-family: monospace; white-space: nowrap; margin-top: 8px;">
-  \[
-  \small
-  \begin{array}{rrrrrrrr|r}
-    \text{x} & \text{y} & 1 & 0 & 0 & 0 & -xu & -yu & u \\
-    0 & 0 & 0 & \text{x} & \text{y} & 1 & -xv & -yv & v \\
-    2455 & 691 & 1 & 0 & 0 & 0 & -569560 & -160312 & 232 \\
-    0 & 0 & 0 & 2455 & 691 & 1 & -1256960 & -353792 & 512 \\
-    \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots
-  \end{array}
-  \]
+  <h4>System of Equations \((A \mid b)\)</h4>
+  <div style="overflow-x: auto; font-family: monospace; white-space: nowrap; margin-top: 8px;">
+    \[
+    \small
+    \begin{array}{rrrrrrrr|r}
+      \text{x} & \text{y} & 1 & 0 & 0 & 0 & -xu & -yu & u \\
+      0 & 0 & 0 & \text{x} & \text{y} & 1 & -xv & -yv & v \\
+      2455 & 691 & 1 & 0 & 0 & 0 & -569560 & -160312 & 232 \\
+      0 & 0 & 0 & 2455 & 691 & 1 & -1256960 & -353792 & 512 \\
+      2540 & 858 & 1 & 0 & 0 & 0 & -891540 & -301158 & 351 \\
+      0 & 0 & 0 & 2540 & 858 & 1 & -1831340 & -618618 & 721 \\
+      2572 & 1539 & 1 & 0 & 0 & 0 & -938780 & -561735 & 365 \\
+      0 & 0 & 0 & 2572 & 1539 & 1 & -3832280 & -2293110 & 1490 \\
+      4586 & 255 & 1 & 0 & 0 & 0 & -11515446 & -640305 & 2511 \\
+      0 & 0 & 0 & 4586 & 255 & 1 & -2384720 & -132600 & 520 \\
+      4483 & 531 & 1 & 0 & 0 & 0 & -10857826 & -1286082 & 2422 \\
+      0 & 0 & 0 & 4483 & 531 & 1 & -3366733 & -398781 & 751 \\
+      3782 & 1720 & 1 & 0 & 0 & 0 & -6762216 & -3075360 & 1788 \\
+      0 & 0 & 0 & 3782 & 1720 & 1 & -6743306 & -3066760 & 1783 \\
+      \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots
+    \end{array}
+    \]
+  </div>
 </div>
-    </div>
+
   </div>
 
 </section>
@@ -226,18 +237,17 @@
       <p>
         I implemented inverse warping with two interpolation modes:
         <strong>Nearest Neighbor</strong> (round to the closest pixel) and <strong>Bilinear</strong> (weighted sum of the 4 neighbors).
-        The output canvas size is predicted by warping the 4 source corners through \(H\). For rectification, I map a skewed
-        quad in the original to a fronto-parallel rectangle.
+        The output canvas size is predicted by warping the 4 source corners through \(H\).
       </p>
 
       <div class="two" style="margin-top:10px;">
         <figure class="thumb">
           <img src="./media/A3reprojectionkitchen.png" alt="Kitchen: rectification">
-          <figcaption>Rectification of the hallway painting (original vs NN vs bilinear).</figcaption>
+          <figcaption>Rectification of the hallway painting using bilinear interpolation.</figcaption>
         </figure>
         <figure class="thumb">
           <img src="./media/A3reprojectioncooler.png" alt="Cooler: rectification">
-          <figcaption>Rectification of the cooler (top-down view).</figcaption>
+          <figcaption>Rectification of the cooler using bilinear interpolation.</figcaption>
         </figure>
       </div>
 
@@ -253,11 +263,22 @@
       </div>
 
       <div class="note" style="margin-top:12px;">
-        <strong>Trade-offs.</strong>
-        Nearest neighbor is fast but shows aliasing/jaggies; bilinear is slower yet much cleaner on edges and thin details.
-        I also ran into EXIF rotation differences between file viewers — I auto-transpose on load so pixel coordinates match my clicks.
-      </div>
-    </section>
+  <strong>Trade-offs.</strong><br>
+
+  <p style="margin-top:8px;">
+    Nearest neighbor interpolation works by mapping a point in the output image to the nearest pixel in the input image and directly copying its value. Because it only involves rounding coordinates and reading a single pixel, it’s extremely fast and lightweight. However, this simplicity can lead to jagged or pixelated artifacts.
+
+  <p>
+    Bilinear interpolation, in contrast, considers the values of the four closest pixels surrounding the target coordinate. It calculates a weighted average based on the distance of the point from each of these neighbors. While this method results in noticeably smoother and more natural-looking images, it comes at a computational cost. Each pixel requires multiple memory accesses and additional floating-point operations to compute the interpolation in both the horizontal and vertical directions.
+  </p>
+
+  <p>
+    The performance gap between the two arises from this difference in workload. Nearest neighbor does just one read and minimal math, while bilinear needs four reads and several arithmetic steps per pixel — leading to significantly higher computational overhead. This explains why bilinear interpolation tends to be slower, sometimes by 40–50%, depending on the image size.
+  </p>
+
+</div>
+</section>
+
 
     <!-- A.4 -->
     <section class="card" id="a4">
@@ -266,7 +287,7 @@
         I build a mosaic by chaining homographies into the first view’s coordinate frame, predicting a global canvas from all warped
         corner boxes, and <em>inverse warping</em> each image into that canvas. For blending I use simple feathering:
         an alpha mask that is high near the center of each warped image and falls to zero at its borders (weighted averaging at
-        every pixel). This removes hard seams without fancy pyramids and worked well for these scenes.
+        every pixel). This removed hard seams, and though I considered implementing a Laplacian pyramid, it was not necessary based on the results.
       </p>
 
       <div class="gallery" style="margin-top:10px;">
@@ -288,7 +309,6 @@
         <strong>Blending notes.</strong>
         <ul style="margin:8px 0 0 18px;">
           <li>I warp a <em>ones</em> image through the same homography to get an occupancy map, then multiply by a feather mask for the final alpha.</li>
-          <li>All images are accumulated in float32 and divided by the weight sum at the end (avoid exposure dips near seams).</li>
           <li>For wide FOVs you could switch to cylindrical/spherical projection, but these 3–4-view panoramas were fine with planar homographies.</li>
         </ul>
       </div>
