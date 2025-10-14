@@ -168,20 +168,22 @@
     \]
   </p>
 
-  <div class="two" style="margin-top:10px;">
-    <figure class="thumb">
-      <img src="./media/A2correspondences.png" alt="Correspondences visualization">
-      <figcaption>Correspondences and side‑by‑side visualization (points / matches)</figcaption>
-    </figure>
-    <div class="note">
-      <strong>Remarks:</strong>
-      <ul style="margin:8px 0 0 18px;">
-        <li>All matched correspondences are used (not just 4) and the system is solved via least squares.</li>
-        <li>\(h_{33}=1\) is fixed and used to normalize the solution.</li>
-        <li>The estimated \(H\) along with the system of equations is shown below for reference.</li>
-      </ul>
-    </div>
+  <div class="two" style="margin-top:10px; display: block;">
+  <figure class="thumb" style="max-width: 100%; text-align: center;">
+    <img src="./media/A2correspondences.png" alt="Correspondences visualization" style="width: 90%; height: auto; display: block; margin: 0 auto;">
+    <figcaption style="margin-top: 8px;">Correspondences and side‑by‑side visualization (points / matches)</figcaption>
+  </figure>
+
+  <div class="note" style="margin-top: 12px;">
+    <strong>Remarks:</strong>
+    <ul style="margin: 8px 0 0 18px;">
+      <li>All matched correspondences are used (not just 4) and the system is solved via least squares.</li>
+      <li>\(h_{33}=1\) is fixed and used to normalize the solution.</li>
+      <li>The estimated \(H\) along with the system of equations is shown below for reference.</li>
+    </ul>
   </div>
+</div>
+
 
   <div class="two" style="margin-top:16px;">
     <div>
@@ -198,22 +200,18 @@
     </div>
     <div>
       <h4>System of Equations \((A \mid b)\)</h4>
-      <div class="note" style="overflow-x: auto; font-family: monospace;">
-        \[
-        \begin{array}{rrrrrrrr|r}
-          \text{x} & \text{y} & 1 & 0 & 0 & 0 & -xu & -yu & u \\
-          0 & 0 & 0 & \text{x} & \text{y} & 1 & -xv & -yv & v \\
-          \hline
-          2455 & 691 & 1 & 0 & 0 & 0 & -569560 & -160312 & 232 \\
-          0 & 0 & 0 & 2455 & 691 & 1 & -1256960 & -353792 & 512 \\
-          2540 & 858 & 1 & 0 & 0 & 0 & -891540 & -301158 & 351 \\
-          0 & 0 & 0 & 2540 & 858 & 1 & -1831340 & -618618 & 721 \\
-          2572 & 1539 & 1 & 0 & 0 & 0 & -938780 & -561735 & 365 \\
-          0 & 0 & 0 & 2572 & 1539 & 1 & -3832280 & -2293110 & 1490 \\
-          \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots
-        \end{array}
-        \]
-      </div>
+      <div style="overflow-x: auto; font-family: monospace; white-space: nowrap; margin-top: 8px;">
+  \[
+  \small
+  \begin{array}{rrrrrrrr|r}
+    \text{x} & \text{y} & 1 & 0 & 0 & 0 & -xu & -yu & u \\
+    0 & 0 & 0 & \text{x} & \text{y} & 1 & -xv & -yv & v \\
+    2455 & 691 & 1 & 0 & 0 & 0 & -569560 & -160312 & 232 \\
+    0 & 0 & 0 & 2455 & 691 & 1 & -1256960 & -353792 & 512 \\
+    \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots
+  \end{array}
+  \]
+</div>
     </div>
   </div>
 
