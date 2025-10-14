@@ -308,11 +308,72 @@
       <div class="note" style="margin-top:12px;">
         <strong>Blending notes.</strong>
         <ul style="margin:8px 0 0 18px;">
-          <li>I warp a <em>ones</em> image through the same homography to get an occupancy map, then multiply by a feather mask for the final alpha.</li>
-          <li>For wide FOVs you could switch to cylindrical/spherical projection, but these 3–4-view panoramas were fine with planar homographies.</li>
+          <li>I warp a <em>ones</em> image through the same homography to get a map of where the image will be, then multiply by a feather mask for the final alpha.</li>
+
         </ul>
       </div>
     </section>
+        <!-- A.5 -->
+    <section class="card" id="a5">
+      <h3>A.5 — Cylindrical Mapping</h3>
+      <p>
+        Really wide panoramas look better if we first “unwrap” each photo onto a cylinder before stitching. Intuitively, imagine
+        taping the photo onto a soda can and then looking straight at the can—the horizontal perspective becomes more uniform, so
+        the panorama doesn’t stretch or bend weirdly at the edges.
+      </p>
+
+      <div class="two" style="margin-top:10px;">
+        <div>
+          <h4>Method (in simple terms)</h4>
+          <ol style="margin-top:6px;">
+            <li><strong>Choose a focal length \(f\)</strong> (in pixels). I start with \(f \approx 0.8\text{–}1.0 \times\) image width and tweak by eye.</li>
+            <li><strong>Inverse warp to the cylinder.</strong> For every pixel on the cylindrical canvas \((u,v)\), map back to the original image \((x,y)\)
+              and sample with bilinear interpolation. This avoids holes.</li>
+            <li><strong>Stitch on the curved canvases.</strong> After pre-warping each image to cylindrical space, I reuse the exact same
+              homography + feathered blend pipeline from A.4 to build the mosaic.</li>
+          </ol>
+
+          <div class="note" style="margin-top:10px;">
+            <strong>Why it helps.</strong> Pure yaw becomes close to a horizontal shift after cylindrical mapping, so wide fields of view
+            stitch with less distortion (especially near the sides).
+          </div>
+
+          <h4 style="margin-top:12px;">Formulas (what I implemented)</h4>
+          <p class="muted" style="margin-top:4px;">
+            Let the image center be \((c_x,c_y)\). Normalized coordinates: \(x'=\frac{x-c_x}{f},\; y'=\frac{y-c_y}{f}\).
+          </p>
+          <p style="margin-top:6px;">
+            <em>Forward (plane → cylinder):</em><br/>
+            \[
+              \theta=\arctan(x'), \quad h=\frac{y'}{\sqrt{1+x'^2}}, \quad
+              u = f\,\theta + c_x,\;\; v = f\,h + c_y.
+            \]
+            <em>Inverse used for sampling (cylinder → plane):</em><br/>
+            \[
+              \theta=\frac{u-c_x}{f},\;\; h=\frac{v-c_y}{f},\;\;
+              x = f \tan\theta + c_x,\;\;
+              y = \frac{f\,h}{\cos\theta} + c_y.
+            \]
+          </p>
+
+          <p class="muted" style="margin-top:6px;">
+            I predict the output canvas by forward-warping the source image borders into cylindrical space and taking their min/max.
+            Blending uses the same soft feather mask as in A.4.
+          </p>
+        </div>
+
+        <figure class="thumb">
+          <img src="./media/A5shedcylindrical.png" alt="Cylindrical mosaic of shed scene">
+          <figcaption>Shed mosaic after cylindrical pre-warping + feathered blend.</figcaption>
+        </figure>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Picking \(f\).</strong> If you know the horizontal field of view (FOV), \(f \approx \dfrac{W}{2\tan(\mathrm{FOV}/2)}\).
+        Otherwise, \(0.8\text{–}1.0\times W\) is a good starting range; larger \(f\) flattens edges, smaller \(f\) adds more “fisheye.”
+      </div>
+    </section>
+    
   </main>
 
   <footer>© <span id="year"></span> Sarah Kiefer — All Rights Reserved</footer>
