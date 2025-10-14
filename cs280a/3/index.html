@@ -109,142 +109,98 @@
   <h3>A.2 — Homography Matrix Computation</h3>
 
   <p>
-    To derive the homography \(H\), we start from the projective mapping
-  \[
-  \lambda \,
-  \begin{pmatrix} u \\ v \\ 1 \end{pmatrix}
-  = H \,
-  \begin{pmatrix} x \\ y \\ 1 \end{pmatrix}
-  , \quad
-  H = \begin{pmatrix}
-    h_1 & h_2 & h_3 \\
-    h_4 & h_5 & h_6 \\
-    h_7 & h_8 & 1
-  \end{pmatrix}.
-  \]
-  Expanding gives:
-  \[
-  \lambda
-  \begin{pmatrix}
-    u \\ v \\ 1
-  \end{pmatrix}
-  =
-  \begin{pmatrix}
-    h_1 x + h_2 y + h_3 \\
-    h_4 x + h_5 y + h_6 \\
-    h_7 x + h_8 y + 1
-  \end{pmatrix}
-  \quad\Longrightarrow\quad
-  \begin{pmatrix} u \\ v \end{pmatrix}
-  =
-  \frac{1}{h_7 x + h_8 y + 1}
-  \begin{pmatrix}
-    h_1 x + h_2 y + h_3 \\
-    h_4 x + h_5 y + h_6
-  \end{pmatrix}.
-  \]
-  Solving for \(u\) and \(v\) leads to:
-  \[
-  \begin{aligned}
-  u &= \frac{h_1 x + h_2 y + h_3}{h_7 x + h_8 y + 1}, \\
-  v &= \frac{h_4 x + h_5 y + h_6}{h_7 x + h_8 y + 1}.
-  \end{aligned}
-  \]
-  Multiply both sides by the denominator to linearize:
-  \[
-  \begin{aligned}
-  (h_7 x + h_8 y + 1)\,u &= h_1 x + h_2 y + h_3, \\
-  (h_7 x + h_8 y + 1)\,v &= h_4 x + h_5 y + h_6.
-  \end{aligned}
-  \]
-  Rearranged, we get:
-  \[
-  \begin{aligned}
-  h_1 x + h_2 y + h_3 - h_7 x u - h_8 y u &= u, \\
-  h_4 x + h_5 y + h_6 - h_7 x v - h_8 y v &= v.
-  \end{aligned}
-  \]
-  You can reorganize these into a linear system \(A\,\mathbf{h} = \mathbf{b}\), where each correspondence \((x,y)\leftrightarrow(u,v)\) contributes:
-  \[
-  \begin{pmatrix}
-  x & y & 1 & 0 & 0 & 0 & -x\,u & -y\,u \\
-  0 & 0 & 0 & x & y & 1 & -x\,v & -y\,v
-  \end{pmatrix}
-  \begin{pmatrix}
-  h_1 \\ h_2 \\ h_3 \\ h_4 \\ h_5 \\ h_6 \\ h_7 \\ h_8
-  \end{pmatrix}
-  =
-  \begin{pmatrix}
-  u \\ v
-  \end{pmatrix}.
-  \]
+    To derive the homography \(H\), we begin with the projective mapping:
+    \[
+    \lambda \begin{pmatrix} u \\ v \\ 1 \end{pmatrix}
+    = H \begin{pmatrix} x \\ y \\ 1 \end{pmatrix},
+    \quad
+    H = \begin{pmatrix}
+      h_1 & h_2 & h_3 \\
+      h_4 & h_5 & h_6 \\
+      h_7 & h_8 & 1
+    \end{pmatrix}
+    \]
+    Expanding leads to
+    \[
+    \lambda
+    \begin{pmatrix}
+      u \\ v \\ 1
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      h_1x + h_2y + h_3 \\
+      h_4x + h_5y + h_6 \\
+      h_7x + h_8y + 1
+    \end{pmatrix}
+    \;\Rightarrow\;
+    \begin{pmatrix} u \\ v \end{pmatrix}
+    =
+    \frac 1 {h_7x + h_8y + 1}
+    \begin{pmatrix}
+      h_1x + h_2y + h_3 \\
+      h_4x + h_5y + h_6
+    \end{pmatrix}
+    \]
+    Then solve for \(u\), \(v\), multiply through denominator, and rearrange to form a linear system \(A \mathbf h = \mathbf b\).  
   </p>
 
-  <div class="two" style="margin-top:10px;">
+  <div class="two" style="margin-top:16px;">
+    <div>
+      <h4>Estimated Homography \(H\)</h4>
+      <div style="font-family: monospace; overflow-x: auto;">
+        \[
+        H = \begin{pmatrix}
+          2.15550428 & -0.0430876702 & -4906.88072 \\
+          0.477781322 & 1.72997297 & -1598.98547 \\
+          0.000213922679 & -0.0000134985651 & 1.00000000
+        \end{pmatrix}
+        \]
+      </div>
+    </div>
+    <div>
+      <h4>System of Equations \((A \mid b)\)</h4>
+      <div class="note" style="overflow-x: auto; font-family: monospace;">
+        \[
+        \left(
+        \begin{array}{*{8}{r} \;|\; r}
+         2455 &  691 & 1 & 0 & 0 & 0 & -569560 & -160312 & \;|\; 232 \\
+           0 &    0 & 0 & 2455 & 691 & 1 & -1256960 & -353792 & \;|\; 512 \\
+         2540 &  858 & 1 & 0 & 0 & 0 & -891540 & -301158 & \;|\; 351 \\
+           0 &    0 & 0 & 2540 & 858 & 1 & -1831340 & -618618 & \;|\; 721 \\
+         2572 & 1539 & 1 & 0 & 0 & 0 & -938780 & -561735 & \;|\; 365 \\
+           0 &    0 & 0 & 2572 & 1539 & 1 & -3832280 & -2293110 & \;|\; 1490 \\
+         4586 &  255 & 1 & 0 & 0 & 0 & -11515446 & -640305 & \;|\; 2511 \\
+           0 &    0 & 0 & 4586 & 255 & 1 & -2384720 & -132600 & \;|\; 520 \\
+         4483 &  531 & 1 & 0 & 0 & 0 & -10857826 & -1286082 & \;|\; 2422 \\
+           0 &    0 & 0 & 4483 & 531 & 1 & -3366733 & -398781 & \;|\; 751 \\
+         3782 & 1720 & 1 & 0 & 0 & 0 & -6762216 & -3075360 & \;|\; 1788 \\
+           0 &    0 & 0 & 3782 & 1720 & 1 & -6743306 & -3066760 & \;|\; 1783 \\
+        \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \;|\; \vdots
+        \end{array}
+        \right)
+        \]
+      </div>
+    </div>
+  </div>
+
+  <!-- Now your correspondence image (as before) -->
+  <div class="two" style="margin-top:16px;">
     <figure class="thumb">
-      <!-- Your correspondence visualization image -->
       <img src="./media/A2correspondences.png" alt="Correspondences visualization">
-      <figcaption>Correspondences and side‑by‑side visualization (points / matches)</figcaption>
+      <figcaption>Correspondences and side‑by‑side visualization</figcaption>
     </figure>
     <div class="note">
       <strong>Remarks:</strong>
       <ul style="margin:8px 0 0 18px;">
-        <li>I use **all** matched correspondences (not just 4) and solve via least squares.</li>
-        <li>The \((3,3)\) entry \(h_{33}\) is fixed to 1, and after solving I normalize by that.</li>
-        <li>I report the estimated \(H\) and the mean reprojection error per image pair.</li>
+        <li>I use **all** matched correspondences, not just 4, and solve via least squares.</li>
+        <li>I fix \(h_{33} = 1\) and normalize by it.</li>
+        <li>I report the estimated homography and reprojection error per image pair.</li>
       </ul>
     </div>
   </div>
 
-  <h4 style="margin-top:16px;">Estimated Homography \(H\)</h4>
-  <pre>
-  \[
-  H = \begin{pmatrix}
-    2.15550428 & -0.0430876702 & -4906.88072 \\
-    0.477781322 & 1.72997297 & -1598.98547 \\
-    0.000213922679 & -0.0000134985651 & 1.00000000
-  \end{pmatrix}
-  \]
-  </pre>
-
-  <h4 style="margin-top:16px;">First 12 rows of \(A\) and corresponding \(b\)</h4>
-  <pre>
-  A = \[
-  \begin{pmatrix}
-   2455 &  691 & 1 & 0 & 0 & 0 & –569560 & –160312 \\
-   0 & 0 & 0 & 2455 & 691 & 1 & –1256960 & –353792 \\
-   2540 & 858 & 1 & 0 & 0 & 0 & –891540 & –301158 \\
-   0 & 0 & 0 & 2540 & 858 & 1 & –1831340 & –618618 \\
-   2572 & 1539 & 1 & 0 & 0 & 0 & –938780 & –561735 \\
-   0 & 0 & 0 & 2572 & 1539 & 1 & –3832280 & –2293110 \\
-   4586 & 255 & 1 & 0 & 0 & 0 & –11515446 & –640305 \\
-   0 & 0 & 0 & 4586 & 255 & 1 & –2384720 & –132600 \\
-   4483 & 531 & 1 & 0 & 0 & 0 & –10857826 & –1286082 \\
-   0 & 0 & 0 & 4483 & 531 & 1 & –3366733 & –398781 \\
-   3782 & 1720 & 1 & 0 & 0 & 0 & –6762216 & –3075360 \\
-   0 & 0 & 0 & 3782 & 1720 & 1 & –6743306 & –3066760 \\
-  \end{pmatrix}
-  \]
-
-  b = \[
-  \begin{pmatrix}
-   232 \\
-   512 \\
-   351 \\
-   721 \\
-   365 \\
-   1490 \\
-   2511 \\
-   520 \\
-   2422 \\
-   751 \\
-   1788 \\
-   1783
-  \end{pmatrix}
-  \]
-  </pre>
-
 </section>
+
 
 
     <!-- A.3 -->
