@@ -105,44 +105,83 @@
     </section>
 
 <!-- A.2 — Homography Matrix Computation -->
-<section class="card" id="a2">
-  <h3>A.2 — Homography Matrix Computation</h3>
-
+<section class="card" id="a2"> 
+  <h3>A.2 — Homography Matrix Computation</h3> 
   <p>
-    To derive the homography \(H\), we begin with the projective mapping:
+    To derive the homography \(H\), we start from the projective mapping
     \[
-    \lambda \begin{pmatrix} u \\ v \\ 1 \end{pmatrix}
-    = H \begin{pmatrix} x \\ y \\ 1 \end{pmatrix},
-    \quad
-    H = \begin{pmatrix}
+    \lambda \begin{pmatrix} u \\ v \\ 1 \end{pmatrix} =
+    H \begin{pmatrix} x \\ y \\ 1 \end{pmatrix}, \quad
+    H =
+    \begin{pmatrix}
       h_1 & h_2 & h_3 \\
       h_4 & h_5 & h_6 \\
       h_7 & h_8 & 1
-    \end{pmatrix}
+    \end{pmatrix}.
     \]
-    Expanding leads to
+    Expanding gives
     \[
-    \lambda
+    \lambda \begin{pmatrix} u \\ v \\ 1 \end{pmatrix} =
     \begin{pmatrix}
-      u \\ v \\ 1
+      h_1 x + h_2 y + h_3 \\
+      h_4 x + h_5 y + h_6 \\
+      h_7 x + h_8 y + 1
     \end{pmatrix}
-    =
+    \quad \Longrightarrow \quad
+    \begin{pmatrix} u \\ v \end{pmatrix} =
+    \frac{1}{h_7 x + h_8 y + 1}
     \begin{pmatrix}
-      h_1x + h_2y + h_3 \\
-      h_4x + h_5y + h_6 \\
-      h_7x + h_8y + 1
-    \end{pmatrix}
-    \;\Rightarrow\;
-    \begin{pmatrix} u \\ v \end{pmatrix}
-    =
-    \frac 1 {h_7x + h_8y + 1}
-    \begin{pmatrix}
-      h_1x + h_2y + h_3 \\
-      h_4x + h_5y + h_6
-    \end{pmatrix}
+      h_1 x + h_2 y + h_3 \\
+      h_4 x + h_5 y + h_6
+    \end{pmatrix}.
     \]
-    Then solve for \(u\), \(v\), multiply through denominator, and rearrange to form a linear system \(A \mathbf h = \mathbf b\).  
+    Solving for \(u\) and \(v\) leads to
+    \[
+    \begin{aligned}
+      u &= \frac{h_1 x + h_2 y + h_3}{h_7 x + h_8 y + 1}, \\
+      v &= \frac{h_4 x + h_5 y + h_6}{h_7 x + h_8 y + 1}.
+    \end{aligned}
+    \]
+    Multiply both sides by the denominator to linearize:
+    \[
+    \begin{aligned}
+      (h_7 x + h_8 y + 1)u &= h_1 x + h_2 y + h_3, \\
+      (h_7 x + h_8 y + 1)v &= h_4 x + h_5 y + h_6.
+    \end{aligned}
+    \]
+    Rearranging:
+    \[
+    \begin{aligned}
+      h_1 x + h_2 y + h_3 - h_7 x u - h_8 y u &= u, \\
+      h_4 x + h_5 y + h_6 - h_7 x v - h_8 y v &= v.
+    \end{aligned}
+    \]
+    Each correspondence \((x,y)\leftrightarrow(u,v)\) contributes two equations, giving the linear system
+    \[
+    \underbrace{\begin{pmatrix}
+      x & y & 1 & 0 & 0 & 0 & -xu & -yu \\
+      0 & 0 & 0 & x & y & 1 & -xv & -yv
+    \end{pmatrix}}_{A}
+    \begin{pmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \\ h_5 \\ h_6 \\ h_7 \\ h_8 \end{pmatrix}
+    =
+    \underbrace{\begin{pmatrix} u \\ v \end{pmatrix}}_{b}.
+    \]
   </p>
+
+  <div class="two" style="margin-top:10px;">
+    <figure class="thumb">
+      <img src="./media/A2correspondences.png" alt="Correspondences visualization">
+      <figcaption>Correspondences and side‑by‑side visualization (points / matches)</figcaption>
+    </figure>
+    <div class="note">
+      <strong>Remarks:</strong>
+      <ul style="margin:8px 0 0 18px;">
+        <li>All matched correspondences are used (not just 4) and the system is solved via least squares.</li>
+        <li>\(h_{33}=1\) is fixed and used to normalize the solution.</li>
+        <li>The estimated \(H\) along with the system of equations is shown below for reference.</li>
+      </ul>
+    </div>
+  </div>
 
   <div class="two" style="margin-top:16px;">
     <div>
@@ -161,45 +200,25 @@
       <h4>System of Equations \((A \mid b)\)</h4>
       <div class="note" style="overflow-x: auto; font-family: monospace;">
         \[
-        \left(
-        \begin{array}{*{8}{r} \;|\; r}
-         2455 &  691 & 1 & 0 & 0 & 0 & -569560 & -160312 & \;|\; 232 \\
-           0 &    0 & 0 & 2455 & 691 & 1 & -1256960 & -353792 & \;|\; 512 \\
-         2540 &  858 & 1 & 0 & 0 & 0 & -891540 & -301158 & \;|\; 351 \\
-           0 &    0 & 0 & 2540 & 858 & 1 & -1831340 & -618618 & \;|\; 721 \\
-         2572 & 1539 & 1 & 0 & 0 & 0 & -938780 & -561735 & \;|\; 365 \\
-           0 &    0 & 0 & 2572 & 1539 & 1 & -3832280 & -2293110 & \;|\; 1490 \\
-         4586 &  255 & 1 & 0 & 0 & 0 & -11515446 & -640305 & \;|\; 2511 \\
-           0 &    0 & 0 & 4586 & 255 & 1 & -2384720 & -132600 & \;|\; 520 \\
-         4483 &  531 & 1 & 0 & 0 & 0 & -10857826 & -1286082 & \;|\; 2422 \\
-           0 &    0 & 0 & 4483 & 531 & 1 & -3366733 & -398781 & \;|\; 751 \\
-         3782 & 1720 & 1 & 0 & 0 & 0 & -6762216 & -3075360 & \;|\; 1788 \\
-           0 &    0 & 0 & 3782 & 1720 & 1 & -6743306 & -3066760 & \;|\; 1783 \\
-        \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \;|\; \vdots
+        \begin{array}{rrrrrrrr|r}
+          \text{x} & \text{y} & 1 & 0 & 0 & 0 & -xu & -yu & u \\
+          0 & 0 & 0 & \text{x} & \text{y} & 1 & -xv & -yv & v \\
+          \hline
+          2455 & 691 & 1 & 0 & 0 & 0 & -569560 & -160312 & 232 \\
+          0 & 0 & 0 & 2455 & 691 & 1 & -1256960 & -353792 & 512 \\
+          2540 & 858 & 1 & 0 & 0 & 0 & -891540 & -301158 & 351 \\
+          0 & 0 & 0 & 2540 & 858 & 1 & -1831340 & -618618 & 721 \\
+          2572 & 1539 & 1 & 0 & 0 & 0 & -938780 & -561735 & 365 \\
+          0 & 0 & 0 & 2572 & 1539 & 1 & -3832280 & -2293110 & 1490 \\
+          \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots
         \end{array}
-        \right)
         \]
       </div>
     </div>
   </div>
 
-  <!-- Now your correspondence image (as before) -->
-  <div class="two" style="margin-top:16px;">
-    <figure class="thumb">
-      <img src="./media/A2correspondences.png" alt="Correspondences visualization">
-      <figcaption>Correspondences and side‑by‑side visualization</figcaption>
-    </figure>
-    <div class="note">
-      <strong>Remarks:</strong>
-      <ul style="margin:8px 0 0 18px;">
-        <li>I use **all** matched correspondences, not just 4, and solve via least squares.</li>
-        <li>I fix \(h_{33} = 1\) and normalize by it.</li>
-        <li>I report the estimated homography and reprojection error per image pair.</li>
-      </ul>
-    </div>
-  </div>
-
 </section>
+
 
 
 
