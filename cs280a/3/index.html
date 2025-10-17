@@ -317,38 +317,37 @@
     <section class="card" id="a5">
       <h3>A.5 — Cylindrical Mapping</h3>
       <p>
-        Really wide panoramas look better if we first “unwrap” each photo onto a cylinder before stitching. Intuitively, imagine
-        taping the photo onto a soda can and then looking straight at the can—the horizontal perspective becomes more uniform, so
-        the panorama doesn’t stretch or bend weirdly at the edges.
+        Wide panoramas could look better if we first map the images onto a cylinder before stitching. 
+        This can look much more natural since the image feels fuller than when mapped via planar projection, especially at the edges.
+        I do see more artifacts in the cylindrical mosaic, likely due to some blending with the borders after warping
       </p>
 
       <div class="two" style="margin-top:10px;">
         <div>
-          <h4>Method (in simple terms)</h4>
+          <h4>My Process</h4>
           <ol style="margin-top:6px;">
-            <li><strong>Choose a focal length \(f\)</strong> (in pixels). I start with \(f \approx 0.8\text{–}1.0 \times\) image width and tweak by eye.</li>
+            <li><strong>I chose a focal length \(f\)</strong> (in pixels). I start with \(f \approx 0.8\text{–}1.0 \times\) and then tweak by eye.</li>
             <li><strong>Inverse warp to the cylinder.</strong> For every pixel on the cylindrical canvas \((u,v)\), map back to the original image \((x,y)\)
-              and sample with bilinear interpolation. This avoids holes.</li>
-            <li><strong>Stitch on the curved canvases.</strong> After pre-warping each image to cylindrical space, I reuse the exact same
+              and sample with bilinear interpolation.</li>
+            <li><strong>Stitch</strong> After pre-warping each image to cylindrical space, I reuse the same
               homography + feathered blend pipeline from A.4 to build the mosaic.</li>
           </ol>
 
           <div class="note" style="margin-top:10px;">
-            <strong>Why it helps.</strong> Pure yaw becomes close to a horizontal shift after cylindrical mapping, so wide fields of view
-            stitch with less distortion (especially near the sides).
+            <strong>Why it helps.</strong> On a cylindrical projection, turning the camera left/right becomes a sideways shift, so wide-angle panoramas line up better with less edge distortion.
           </div>
 
-          <h4 style="margin-top:12px;">Formulas (what I implemented)</h4>
+          <h4 style="margin-top:12px;">Formulas</h4>
           <p class="muted" style="margin-top:4px;">
             Let the image center be \((c_x,c_y)\). Normalized coordinates: \(x'=\frac{x-c_x}{f},\; y'=\frac{y-c_y}{f}\).
           </p>
           <p style="margin-top:6px;">
-            <em>Forward (plane → cylinder):</em><br/>
+            <em>plane → cylinder:</em><br/>
             \[
               \theta=\arctan(x'), \quad h=\frac{y'}{\sqrt{1+x'^2}}, \quad
               u = f\,\theta + c_x,\;\; v = f\,h + c_y.
             \]
-            <em>Inverse used for sampling (cylinder → plane):</em><br/>
+            <em>cylinder → plane:</em><br/>
             \[
               \theta=\frac{u-c_x}{f},\;\; h=\frac{v-c_y}{f},\;\;
               x = f \tan\theta + c_x,\;\;
@@ -358,7 +357,7 @@
 
           <p class="muted" style="margin-top:6px;">
             I predict the output canvas by forward-warping the source image borders into cylindrical space and taking their min/max.
-            Blending uses the same soft feather mask as in A.4.
+            Blending uses the same mask as in A.4.
           </p>
         </div>
 
@@ -367,13 +366,161 @@
           <figcaption>Shed mosaic after cylindrical pre-warping + feathered blend.</figcaption>
         </figure>
       </div>
-
-      <div class="note" style="margin-top:12px;">
-        <strong>Picking \(f\).</strong> If you know the horizontal field of view (FOV), \(f \approx \dfrac{W}{2\tan(\mathrm{FOV}/2)}\).
-        Otherwise, \(0.8\text{–}1.0\times W\) is a good starting range; larger \(f\) flattens edges, smaller \(f\) adds more “fisheye.”
-      </div>
     </section>
-    
+
+     <section class="card" id="b1">
+      <h3>B.1: Harris Corner Detection</h3>
+      <p>To automate feature matching, we first need an algorithm to find distinctive points in both images. A common choice is the Harris corner detector, which locates corners—pixels where intensity changes strongly in more than one direction—making them good anchors for correspondence.</p>
+
+      <h4>How It Works</h4>
+      <p>My implementation uses scikit-image's corner_harris with the 'eps' method and sigma=1. This functions gives back a response map where higher values indicate corners with stronger directional changes.</p>
+
+      <p>At a high level:</p>
+      <ul>
+        <li>Get the gradients: Calculate Ix and Iy in the x and y directions</li>
+        <li>Form matrix M: Compute the matrix from Ix², IxIy, and Iy², pixelwise</li>
+        <li>Calculate corner response: Compute corner strength with harmonic mean of eigenvalues (‘eps’)</li>
+        <li>Find maxima: Use peak_local_max to find corners (with min_distance = 40) spacing</li>
+      </ul>
+
+      <p>With this set up, a corner is stronger if both e-values of M are big. A weakness of this method is that it often produces many corners but they are not distributed effectively in the image. Ideally, a better set of corners would be smaller, but well-spaced, while preserving the most distinctive corners. To achieve this, I implemented ANMS (Adaptive Non-Maximal Suppression): a technique that selects a subset of Harris corners whose responses are local maxima within a given area. 
+ANMS assigns each detected corner a suppression radius: the smallest distance to another corner that is noticeably stronger. Large radii indicate isolated, high-quality features; small radii signal points sitting near better ones and thus candidates for removal.</p>
+
+      <p>Below I show the corners found with and without ANMS:</p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/B1harriscorneranms.png" alt="B1 Harris corners with and without ANMS">
+        <figcaption>\media\B1harriscorneranms.png</figcaption>
+      </figure>
+    </section>
+
+    <section class="card" id="b2">
+      <h3>B.2: Feature Descriptor Extraction</h3>
+      <p>Next up I needed to turn each corner into a compact, distinct descriptor that we can use to find the homography accurately between the images. These descriptors need to be robust to any exposure/lighting changes so that they can be accurately matched.</p>
+      <p>Around every surviving corner, I take a 40×4040\times4040×40 grayscale window centered on the point. If the full patch would cross the image boundary, that corner is skipped. From this patch, I sample on a regular 555-pixel grid to form an 8×88\times88×8 patch, then bias/gain-normalize the values by subtracting the mean and dividing by the standard deviation. Nearly flat patches (std <<< 1e−81\mathrm{e}{-8}1e−8) are discarded to avoid bad descriptors. The 8×88\times88×8 patch is finally flattened into a 64-D vector.</p>
+
+      <h4>Key details</h4>
+      <p>Window size =40=40=40, descriptor grid =8×8=8\times8=8×8 (sample indices 0,5,10,…,350,5,10,\dots,350,5,10,…,35), epsilon =1e−8=1\mathrm{e}{-8}=1e−8 for numerical stability, and per-descriptor mean/std normalization. The extractor returns three things: the descriptor matrix (M,64)(M,64)(M,64), the indices of corners that produced valid patches, and their (y,x) locations.</p>
+
+      <p>Below you can see 10 example 8×8 grid feature descriptors of the shed image:</p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/B2patches.png" alt="B2 descriptor patch grid">
+        <figcaption>\media\B2patches.png</figcaption>
+      </figure>
+
+      <p>And below shows the  locations of these features in the original image:<br/>[INSERT ‘\media\B2patchcorrs.png’ ]</p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/B2patchcorrs.png" alt="B2 descriptor locations">
+        <figcaption>\media\B2patchcorrs.png</figcaption>
+      </figure>
+    </section>
+
+    <section class="card" id="b3">
+      <h3>B.3: Feature Matching</h3>
+      <p>Once descriptors are computed for both images, the next step is to decide which pairs refer to the same scene area. I do this with a simple nearest-neighbor strategy guided by Lowe’s ratio test. First, I compare every descriptor from image 1 against every descriptor from image 2 using squared Euclidean distance. This produces a big similarity table where smaller values mean two descriptors look alike.</p>
+      <p>For each descriptor in image 1, I look at its two best candidates in image 2: the closest neighbor and the runner-up. A match is accepted only when the closest one is clearly better than the second best, i.e., when the distance ratio d1/d2 is below 0.76. This filter removes ambiguous cases such as repetitive textures, where many patches look almost the same. 
+The matcher returns two things: a list of index pairs linking features across the images, and a confidence score for each pair (the ratio value—smaller is better). I sort the pairs by this score so the most trustworthy correspondences appear first. 
+To make the results easy to inspect, I include a side-by-side visualization: the two images are shown on one canvas, corresponding points are drawn in matching colors with short labels, and a colored line connects each pair.</p>
+
+      <h4>Matching Results</h4>
+
+      <div class="gallery" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/B3bookcasefeatmatching.png" alt="Bookcase feature matches">
+          <figcaption>\media\B3bookcasefeatmatching.png</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/B3shedfeatmatching.png" alt="Shed feature matches">
+          <figcaption>\media\B3shedfeatmatching.png</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/B3viewpointfeatmatching.png" alt="Viewpoint feature matches">
+          <figcaption>\media\B3viewpointfeatmatching.png</figcaption>
+        </figure>
+      </div>
+
+      <p>A brief note on tuning: lowering the ratio threshold yields fewer, cleaner matches; raising it yields more matches with a higher chance of outliers. In practice, 0.76 worked well with our normalized 8×8 descriptors and provided enough high-quality correspondences for RANSAC to find a stable homography.</p>
+    </section>
+
+    <section class="card" id="b4">
+      <h3>B.4: RANSAC</h3>
+      <p><strong>What problem this solves.</strong><br/>
+       Even after the ratio test, a few bad matches may linger. Fitting a homography to all matches makes the result swing toward those outliers. RANSAC fixes this by gathering a large-enough, consistent subset of correspondences and ignores the rest.</p>
+
+      <p><strong>What I implemented.</strong><br/>
+       Starting from the matched points in (x, y), I run a 4-point RANSAC loop. In each trial, four pairs are sampled at random and a candidate homography HHH is fit with our existing computeH. I then project every point from image 1 into image 2 with HHH and measure the forward reprojection error in pixels. Matches with error below a threshold are counted as inliers. The best-scoring model (most inliers) is kept, and finally I refit HHH using all inliers with computeH to get the final estimate. The function returns this refined H and the inlier mask; those inliers are passed straight into the mosaic stitching.</p>
+
+      <p>Below you can see a visualization of the inliers separated from the outliers:</p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/B4bookcaseinliers.png" alt="B4 inliers vs outliers">
+        <figcaption>\media\B4bookcaseinliers.png</figcaption>
+      </figure>
+
+      <p><strong>Parameters used.</strong><br/>
+       I typically run 2000 trials with a 12 px inlier threshold and require ~30+ inliers before refitting. For tougher scenes, increasing iterations (e.g., 5000) or loosening the threshold slightly (12–15 px) gives more inliers and a steadier mosaic.</p>
+
+      <h4>Below are the comparisons of stitching using manual correspondences against automatic stitching:</h4>
+
+      <div class="two" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/A4bookshelf.png" alt="Manual mosaic — bookcase">
+          <figcaption>media\A4bookshelf.png</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/B4bookcaseransac.png" alt="Automatic mosaic — bookcase (RANSAC)">
+          <figcaption>media\B4bookcaseransac.png</figcaption>
+        </figure>
+      </div>
+
+      <div class="two" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/A4viewpoint.png" alt="Manual mosaic — viewpoint">
+          <figcaption>media\A4viewpoint.png</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/B4viewpointransac.png" alt="Automatic mosaic — viewpoint (RANSAC)">
+          <figcaption>media\B4viewpointransac.png</figcaption>
+        </figure>
+      </div>
+      <div class="two" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/A4shed.png" alt="Manual mosaic — shed">
+          <figcaption>media\A4shed.png</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/B4shedransac.png" alt="Automatic mosaic — shed (RANSAC)">
+          <figcaption>media\B4shedransac.png</figcaption>
+        </figure>
+      </div>
+
+      <p style="margin-top:12px;"><strong>Thoughts:</strong><br/>
+       Using RANSAC in front of mosaic_two makes the homographies far less sensitive to mismatches. In practice, the automatic stitches closely match the manual baselines while requiring no hand-picked points—and small tweaks to the iteration count or pixel threshold can trade a bit of speed for extra inliers when needed.</p>
+    </section>
+
+    <section class="card" id="b5">
+      <h3>B.5: Bells + Whistles: Multiscale Processing</h3>
+      <p><strong>Multiscale Processing:</strong><br/>
+      I run corner detection and descriptor extraction at multiple image scales (1.0,0.75,0.5) and merge results back to the original resolution. At each level I extract the harris corners, run ANMS, extract descriptors at each level, and then concatenate everything together. After multiscale extraction on both images, I match with Lowe’s ratio test (with the same threshold as before), convert matches to (x,y), run 4-point RANSAC (iters=5000, thresh_px=12, min_inliers=30), and build the mosaic, which refits using computeH on the RANSAC inliers.</p>
+
+      <p>Below are two examples of the results:<br/>
+
+      <div class="two" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/B5shed.png" alt="B5 shed multiscale mosaic">
+          <figcaption>\media\B5shed.png</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/B5bookcase.png" alt="B5 bookcase multiscale mosaic">
+          <figcaption>\media\B5bookcase.png</figcaption>
+        </figure>
+      </div>
+
+      <p style="margin-top:12px;"><strong>Does it help?</strong><br/>
+      I do think the distinction is somewhat hard to notice but the stitch looks better in the areas at the seam,in the greenery of the shed, and seems overall successful. Woot woot!</p>
+
+      <p> Fun project :) </p>
+    </section>
+
+
   </main>
 
   <footer>© <span id="year"></span> Sarah Kiefer — All Rights Reserved</footer>
