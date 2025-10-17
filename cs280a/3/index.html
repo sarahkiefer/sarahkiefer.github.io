@@ -35,6 +35,10 @@
     .thumb img { width:100%; height:auto; display:block; }
     .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
     footer { max-width:1100px; margin:40px auto; padding:0 14px 30px; color:#6b7280; }
+      .gallery.gallery--bigger { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 640px){
+    .gallery.gallery--bigger { grid-template-columns: 1fr; }
+  }
   </style>
   <!-- Enable MathJax for LaTeX rendering -->
 <script>
@@ -396,10 +400,10 @@ ANMS assigns each detected corner a suppression radius: the smallest distance to
     <section class="card" id="b2">
       <h3>B.2: Feature Descriptor Extraction</h3>
       <p>Next up I needed to turn each corner into a compact, distinct descriptor that we can use to find the homography accurately between the images. These descriptors need to be robust to any exposure/lighting changes so that they can be accurately matched.</p>
-      <p>Around every surviving corner, I take a 40×4040\times4040×40 grayscale window centered on the point. If the full patch would cross the image boundary, that corner is skipped. From this patch, I sample on a regular 555-pixel grid to form an 8×88\times88×8 patch, then bias/gain-normalize the values by subtracting the mean and dividing by the standard deviation. Nearly flat patches (std <<< 1e−81\mathrm{e}{-8}1e−8) are discarded to avoid bad descriptors. The 8×88\times88×8 patch is finally flattened into a 64-D vector.</p>
+      <p>Around every surviving corner, I take a 40\times40 grayscale window centered on the point. If the full patch would cross the image boundary, that corner is skipped. From this patch, I sample on a regular 5\times5 pixel grid to form an 8\times8 patch, then bias/gain-normalize the values by subtracting the mean and dividing by the standard deviation. Nearly flat patches are thrown out to avoid bad descriptors. The 8\times8 patch is finally flattened into a 64-D vector.</p>
 
       <h4>Key details</h4>
-      <p>Window size =40=40=40, descriptor grid =8×8=8\times8=8×8 (sample indices 0,5,10,…,350,5,10,\dots,350,5,10,…,35), epsilon =1e−8=1\mathrm{e}{-8}=1e−8 for numerical stability, and per-descriptor mean/std normalization. The extractor returns three things: the descriptor matrix (M,64)(M,64)(M,64), the indices of corners that produced valid patches, and their (y,x) locations.</p>
+      <p>Window size =40, descriptor grid =8×8 (sample indices 0,5,10,…,350,5,10,\dots,350,5,10,…,35),, and per-descriptor mean/std normalization. The extractor returns three things: the descriptor matrix (M,64), the indices of corners that produced valid patches, and their (y,x) locations.</p>
 
       <p>Below you can see 10 example 8×8 grid feature descriptors of the shed image:</p>
       <figure class="thumb" style="margin-top:10px;">
@@ -407,12 +411,11 @@ ANMS assigns each detected corner a suppression radius: the smallest distance to
         <figcaption>\media\B2patches.png</figcaption>
       </figure>
 
-      <p>And below shows the  locations of these features in the original image:<br/>[INSERT ‘\media\B2patchcorrs.png’ ]</p>
-      <figure class="thumb" style="margin-top:10px;">
-        <img src="./media/B2patchcorrs.png" alt="B2 descriptor locations">
-        <figcaption>\media\B2patchcorrs.png</figcaption>
-      </figure>
-    </section>
+      <p>And below shows the locations of these features in the original image:</p>
+<figure class="thumb" style="margin-top:10px; max-width:360px; margin-left:auto; margin-right:auto;">
+  <img src="./media/B2patchcorrs.png" alt="B2 descriptor locations" style="width:100%; height:auto;">
+  <figcaption>\media\B2patchcorrs.png</figcaption>
+</figure>
 
     <section class="card" id="b3">
       <h3>B.3: Feature Matching</h3>
@@ -423,22 +426,22 @@ To make the results easy to inspect, I include a side-by-side visualization: the
 
       <h4>Matching Results</h4>
 
-      <div class="gallery" style="margin-top:10px;">
-        <figure class="thumb">
-          <img src="./media/B3bookcasefeatmatching.png" alt="Bookcase feature matches">
-          <figcaption>\media\B3bookcasefeatmatching.png</figcaption>
-        </figure>
-        <figure class="thumb">
-          <img src="./media/B3shedfeatmatching.png" alt="Shed feature matches">
-          <figcaption>\media\B3shedfeatmatching.png</figcaption>
-        </figure>
-        <figure class="thumb">
-          <img src="./media/B3viewpointfeatmatching.png" alt="Viewpoint feature matches">
-          <figcaption>\media\B3viewpointfeatmatching.png</figcaption>
-        </figure>
-      </div>
+      <div class="gallery gallery--bigger" style="margin-top:10px;">
+  <figure class="thumb">
+    <img src="./media/B3bookcasefeatmatching.png" alt="Bookcase feature matches">
+    <figcaption>\media\B3bookcasefeatmatching.png</figcaption>
+  </figure>
+  <figure class="thumb">
+    <img src="./media/B3shedfeatmatching.png" alt="Shed feature matches">
+    <figcaption>\media\B3shedfeatmatching.png</figcaption>
+  </figure>
+  <figure class="thumb">
+    <img src="./media/B3viewpointfeatmatching.png" alt="Viewpoint feature matches">
+    <figcaption>\media\B3viewpointfeatmatching.png</figcaption>
+  </figure>
+</div>
 
-      <p>A brief note on tuning: lowering the ratio threshold yields fewer, cleaner matches; raising it yields more matches with a higher chance of outliers. In practice, 0.76 worked well with our normalized 8×8 descriptors and provided enough high-quality correspondences for RANSAC to find a stable homography.</p>
+      <p><strong>A brief note on tuning:</strong> lowering the ratio threshold yields fewer, cleaner matches; raising it yields more matches with a higher chance of outliers. In practice, 0.76 worked well with our normalized 8×8 descriptors and provided enough high-quality correspondences for RANSAC to find a stable homography.</p>
     </section>
 
     <section class="card" id="b4">
@@ -447,7 +450,7 @@ To make the results easy to inspect, I include a side-by-side visualization: the
        Even after the ratio test, a few bad matches may linger. Fitting a homography to all matches makes the result swing toward those outliers. RANSAC fixes this by gathering a large-enough, consistent subset of correspondences and ignores the rest.</p>
 
       <p><strong>What I implemented.</strong><br/>
-       Starting from the matched points in (x, y), I run a 4-point RANSAC loop. In each trial, four pairs are sampled at random and a candidate homography HHH is fit with our existing computeH. I then project every point from image 1 into image 2 with HHH and measure the forward reprojection error in pixels. Matches with error below a threshold are counted as inliers. The best-scoring model (most inliers) is kept, and finally I refit HHH using all inliers with computeH to get the final estimate. The function returns this refined H and the inlier mask; those inliers are passed straight into the mosaic stitching.</p>
+       Starting from the matched points in (x, y), I run a 4-point RANSAC loop. In each trial, four pairs are sampled at random and a candidate homography H is fit. I then project every point from image 1 into image 2 with H and measure the forward reprojection error in pixels. Matches with error below a threshold are counted as inliers. The best-scoring model (most inliers) is kept, and finally I refit H using all inliers to get the final estimate. The function returns this refined H and the inlier mask; those inliers are passed straight into the mosaic stitching.</p>
 
       <p>Below you can see a visualization of the inliers separated from the outliers:</p>
       <figure class="thumb" style="margin-top:10px;">
@@ -493,7 +496,7 @@ To make the results easy to inspect, I include a side-by-side visualization: the
       </div>
 
       <p style="margin-top:12px;"><strong>Thoughts:</strong><br/>
-       Using RANSAC in front of mosaic_two makes the homographies far less sensitive to mismatches. In practice, the automatic stitches closely match the manual baselines while requiring no hand-picked points—and small tweaks to the iteration count or pixel threshold can trade a bit of speed for extra inliers when needed.</p>
+       Using RANSAC makes the homographies far less sensitive to mismatches. In practice, the automatic stitches closely match the manual baselines while requiring no hand-picked points—and small tweaks to the iteration count or pixel threshold can trade a bit of speed for extra inliers when needed.</p>
     </section>
 
     <section class="card" id="b5">
