@@ -36,7 +36,7 @@
     .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
     footer { max-width:1100px; margin:40px auto; padding:0 14px 30px; color:#6b7280; }
       .gallery.gallery--bigger { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 640px){
+  @media (max-width: 820px){
     .gallery.gallery--bigger { grid-template-columns: 1fr; }
   }
   </style>
@@ -403,7 +403,7 @@ ANMS assigns each detected corner a suppression radius: the smallest distance to
       <p>Around every surviving corner, I take a 40\times40 grayscale window centered on the point. If the full patch would cross the image boundary, that corner is skipped. From this patch, I sample on a regular 5\times5 pixel grid to form an 8\times8 patch, then bias/gain-normalize the values by subtracting the mean and dividing by the standard deviation. Nearly flat patches are thrown out to avoid bad descriptors. The 8\times8 patch is finally flattened into a 64-D vector.</p>
 
       <h4>Key details</h4>
-      <p>Window size =40, descriptor grid =8×8 (sample indices 0,5,10,…,350,5,10,\dots,350,5,10,…,35),, and per-descriptor mean/std normalization. The extractor returns three things: the descriptor matrix (M,64), the indices of corners that produced valid patches, and their (y,x) locations.</p>
+      <p>Window size =40, descriptor grid =8×8 (sample indices 0,5,10,…,350,5,10), and per-descriptor mean/std normalization. The extractor returns three things: the descriptor matrix (M,64), the indices of corners that produced valid patches, and their (y,x) locations.</p>
 
       <p>Below you can see 10 example 8×8 grid feature descriptors of the shed image:</p>
       <figure class="thumb" style="margin-top:10px;">
