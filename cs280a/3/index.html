@@ -400,10 +400,10 @@ ANMS assigns each detected corner a suppression radius: the smallest distance to
     <section class="card" id="b2">
       <h3>B.2: Feature Descriptor Extraction</h3>
       <p>Next up I needed to turn each corner into a compact, distinct descriptor that we can use to find the homography accurately between the images. These descriptors need to be robust to any exposure/lighting changes so that they can be accurately matched.</p>
-      <p>Around every surviving corner, I take a 40\times40 grayscale window centered on the point. If the full patch would cross the image boundary, that corner is skipped. From this patch, I sample on a regular 5\times5 pixel grid to form an 8\times8 patch, then bias/gain-normalize the values by subtracting the mean and dividing by the standard deviation. Nearly flat patches are thrown out to avoid bad descriptors. The 8\times8 patch is finally flattened into a 64-D vector.</p>
+      <p>Around every surviving corner, I take a 40 x 40 grayscale window centered on the point. If the full patch would cross the image boundary, that corner is skipped. From this patch, I sample on a regular 5 x 5 pixel grid to form an 8 x 8 patch, then bias/gain-normalize the values by subtracting the mean and dividing by the standard deviation. Nearly flat patches are thrown out to avoid bad descriptors. The 8 x 8 patch is finally flattened into a 64-D vector.</p>
 
       <h4>Key details</h4>
-      <p>Window size =40, descriptor grid =8×8 (sample indices 0,5,10,…,350,5,10), and per-descriptor mean/std normalization. The extractor returns three things: the descriptor matrix (M,64), the indices of corners that produced valid patches, and their (y,x) locations.</p>
+      <p>Window size =40, descriptor grid =8×8 (sample indices 0,5,10,…), and per-descriptor mean/std normalization. The extractor returns three things: the descriptor matrix (M,64), the indices of corners that produced valid patches, and their (y,x) locations.</p>
 
       <p>Below you can see 10 example 8×8 grid feature descriptors of the shed image:</p>
       <figure class="thumb" style="margin-top:10px;">
@@ -426,16 +426,16 @@ To make the results easy to inspect, I include a side-by-side visualization: the
 
       <h4>Matching Results</h4>
 
-      <div class="gallery gallery--bigger" style="margin-top:10px;">
-  <figure class="thumb">
-    <img src="./media/B3bookcasefeatmatching.png" alt="Bookcase feature matches">
-    <figcaption>\media\B3bookcasefeatmatching.png</figcaption>
-  </figure>
-  <figure class="thumb">
+            <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/B3bookcasefeatmatching.png" alt="Bookcase feature matches">
+        <figcaption>\media\B3bookcasefeatmatching.png</figcaption>
+      </figure>
+
+  <figure class="thumb" style="margin-top:10px;">
     <img src="./media/B3shedfeatmatching.png" alt="Shed feature matches">
     <figcaption>\media\B3shedfeatmatching.png</figcaption>
   </figure>
-  <figure class="thumb">
+  <figure class="thumb" style="margin-top:10px;">
     <img src="./media/B3viewpointfeatmatching.png" alt="Viewpoint feature matches">
     <figcaption>\media\B3viewpointfeatmatching.png</figcaption>
   </figure>
