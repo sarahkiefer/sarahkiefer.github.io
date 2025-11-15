@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P4 — Neural Radiance Fields (NeRF)</title>
+  <meta name="description" content="End-to-end Neural Radiance Field (NeRF) pipeline: camera calibration, 2D neural fields, Lego NeRF, and my own captured scene with volume rendering." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
+
+  <style>
+    :root { --gap:16px; --line:#e5e7eb; --muted:#6b7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:#111827; background:#f8fafc; }
+    header { background:#fff; border-bottom:1px solid var(--line); }
+    .wrap, .container { max-width:1100px; margin:0 auto; padding:0 14px; }
+    header h1 { margin:12px 0; font-size:22px; }
+    nav ul { list-style:none; display:flex; gap:14px; margin:0 0 12px; padding:0; }
+    nav a { text-decoration:none; color:#374151; }
+    h2 { margin:18px 0 6px; }
+    h3 { margin:0 0 10px; }
+    .muted { color:var(--muted); }
+    .card { background:#fff; border:1px solid var(--line); border-radius:.65rem; padding:16px; margin:16px 0; }
+    .note { padding:12px 14px; border:1px solid var(--line); border-radius:.6rem; background:#fafafa; color:#374151; }
+
+    /* Layout helpers */
+    .gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--gap); }
+    @media (max-width: 1000px){ .gallery{ grid-template-columns:repeat(2,1fr);} }
+    @media (max-width: 640px){ .gallery{ grid-template-columns:1fr;} }
+
+    .gallery.gallery--bigger { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 820px){
+      .gallery.gallery--bigger { grid-template-columns: 1fr; }
+    }
+
+    .two { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--gap); }
+    @media (max-width: 820px){ .two{ grid-template-columns:1fr; } }
+
+    figure { margin:0; }
+    .thumb { background:#fff; border:1px solid var(--line); border-radius:.55rem; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+    .thumb img { width:100%; height:auto; display:block; }
+    .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#6b7280; }
+    footer { max-width:1100px; margin:40px auto; padding:0 14px 30px; color:#6b7280; }
+  </style>
+
+  <!-- Enable MathJax for LaTeX rendering -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Sarah Kiefer</h1>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="/">&larr; Home</a></li>
+          <li><a href="/cs280a/">CS 280A</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="muted" style="margin:14px 0;"><a href="/cs280a/">&larr; Back to CS 280A</a></p>
+
+    <h2>Project 4 — Neural Radiance Fields (NeRF)</h2>
+    <p class="muted">CS 280A — Computer Vision &amp; Computational Photography</p>
+
+    <p class="note" style="margin-top:10px;">
+      In this project I implemented an end-to-end <strong>Neural Radiance Field (NeRF)</strong> pipeline: from calibrating a real camera,
+      to training neural fields that map positions and viewing directions to density and color, all the way to rendering novel views
+      by integrating samples along rays.
+      The write-up is organized into:
+      <ul style="margin:8px 0 0 18px;">
+        <li><strong>Part 0 — Data capture &amp; calibration.</strong> Build a clean multi-view dataset of a tabletop object using COLMAP.</li>
+        <li><strong>Part 1 — 2D neural field warm-up.</strong> Fit a small network that memorizes a single image, exploring positional encoding and capacity.</li>
+        <li><strong>Part 2 — Full NeRF.</strong> Train a volumetric neural field on the Lego dataset and then on my own captured scene.</li>
+      </ul>
+    </p>
+
+    <!-- Part 0 -->
+    <section class="card" id="part0">
+      <h3>Part 0 — Calibrating My Camera and Capturing a 3D Scan</h3>
+      <p>
+        The first step was to get a solid dataset for NeRF: a calibrated camera and a set of images with accurate poses around a small object.
+        I used an ArUco checkerboard to estimate intrinsics, walked around my object in a smooth loop, and then ran COLMAP for sparse
+        reconstruction and pose estimation. Finally, I exported undistorted, pose-labeled images in the layout expected by the starter code.
+      </p>
+
+      <h4 style="margin-top:10px;">What I did</h4>
+      <ul>
+        <li>Took multiple photos of the calibration board to estimate \(f_x, f_y, c_x, c_y\) and distortion coefficients.</li>
+        <li>Recorded a turntable-style sweep of a tabletop object, keeping distance and step size between views fairly constant.</li>
+        <li>Ran COLMAP’s sparse reconstruction to recover camera poses and a sparse point cloud.</li>
+        <li>Exported undistorted images and camera parameters into the NeRF dataset format for later training.</li>
+      </ul>
+
+      <h4 style="margin-top:14px;">Camera Frustum Visualizations</h4>
+      <p>
+        COLMAP’s reconstruction can be visualized as camera frustums orbiting the object. Below I show an orbit view
+        and a closer zoom, where you can see the cameras nicely distributed around the scene.
+      </p>
+
+      <div class="two" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_frustums_orbit_placeholder.png" alt="Frustums orbit view (placeholder)">
+          <figcaption>Frustums — Orbit view around the object (placeholder for COLMAP/Viser screenshot).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_frustums_close_placeholder.png" alt="Frustums close view (placeholder)">
+          <figcaption>Frustums — Close-up of cameras densely sampling the object (placeholder).</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:16px;">Part 0.1 — Calibrating the Camera</h4>
+      <p>
+        I captured the checkerboard/ArUco target from many angles and used OpenCV’s ArUco utilities to solve for the intrinsics.
+        The resulting calibration file (with focal lengths, principal point, and radial/tangential distortion) is reused
+        by both COLMAP and the NeRF training scripts.
+      </p>
+
+      <h4 style="margin-top:10px;">Part 0.2 — Capturing a 3D Object Scan</h4>
+      <p>
+        With the intrinsics fixed, I walked around the object and collected views with roughly even spacing.
+        The goal was to keep the object centered while avoiding big jumps in angle or distance, which helps COLMAP converge
+        and later produces smoother NeRF renderings.
+      </p>
+
+      <h4 style="margin-top:10px;">Part 0.3 — Estimating Camera Pose</h4>
+      <p>
+        I passed the calibration and images to COLMAP’s sparse pipeline. After feature matching and bundle adjustment,
+        COLMAP produced per-image camera poses. The frustum visualizations above are derived from these outputs and
+        gave me a sanity check that the reconstruction made sense.
+      </p>
+
+      <h4 style="margin-top:10px;">Part 0.4 — Undistorting Images &amp; Building the Dataset</h4>
+      <p>
+        Finally, I undistorted all images and exported them along with poses into the assigned directory structure.
+        This cleaned dataset (intrinsics + extrinsics + RGB frames) is what I feed into the NeRF implementation in Part 2.
+      </p>
+    </section>
+
+    <!-- Part 1 -->
+    <section class="card" id="part1">
+      <h3>Part 1 — Fitting a Neural Field to a 2D Image</h3>
+      <p>
+        Before tackling volume rendering, I started with a 2D neural field that learns a single image.
+        The network takes in normalized 2D coordinates, applies sinusoidal positional encoding,
+        and predicts RGB values. Training samples random pixels, compares predictions to ground truth,
+        and optimizes mean squared error (MSE).
+      </p>
+
+      <h4 style="margin-top:10px;">Model &amp; Training Setup</h4>
+
+      <div class="two" style="margin-top:6px;">
+        <div>
+          <h4>Hyperparameters</h4>
+          <ul>
+            <li>Pixels per step (batch size): 10,000</li>
+            <li>Training steps: 2,000</li>
+            <li>Optimizer: Adam with learning rate \(1\times10^{-2}\)</li>
+            <li>Hidden width: 256</li>
+            <li>Positional encoding frequencies \(L = 10\)</li>
+          </ul>
+
+          <h4 style="margin-top:10px;">MLP Architecture</h4>
+          <p class="muted" style="margin-top:4px;">
+            Inputs are PE-encoded 2D coordinates (dim = 42). The MLP processes them through several ReLU layers and outputs normalized RGB:
+          </p>
+          <pre style="font-size:.9rem; overflow-x:auto; padding:8px; background:#f9fafb; border-radius:.5rem; border:1px solid #e5e7eb;">
+MLP(
+  fc1: Linear(42 → 256), ReLU
+  fc2: Linear(256 → 256), ReLU
+  fc3: Linear(256 → 256), ReLU
+  fc4: Linear(256 → 3), Sigmoid
+)</pre>
+        </div>
+
+        <div>
+          <h4>Reference &amp; Custom Images</h4>
+          <p>
+            I trained on the provided fox image and also on a Golden Gate Bridge photo to see how the network behaves
+            on two very different scenes.
+          </p>
+
+          <div class="two" style="margin-top:8px;">
+            <figure class="thumb">
+              <img src="./media/p4_fox_original_placeholder.png" alt="Fox original image (placeholder)">
+              <figcaption>Fox — Original image (placeholder).</figcaption>
+            </figure>
+            <figure class="thumb">
+              <img src="./media/p4_golden_gate_original_placeholder.png" alt="Golden Gate original image (placeholder)">
+              <figcaption>Golden Gate — Original custom image (placeholder).</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="margin-top:16px;">Training Progression</h4>
+      <p>
+        Every few hundred steps, I rendered the current network prediction on the full image grid.
+        Early on, the model roughly captures colors and coarse shapes; later iterations refine edges and textures.
+      </p>
+
+      <div class="two" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_fox_training_steps_placeholder.png" alt="Fox training progression (placeholder)">
+          <figcaption>Fox — Training snapshots over iterations (placeholder).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_golden_gate_training_steps_placeholder.png" alt="Golden Gate training progression (placeholder)">
+          <figcaption>Golden Gate — Training snapshots (placeholder).</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:16px;">Positional Encoding &amp; Width Sweep</h4>
+      <p>
+        I also swept hidden width and PE frequency to see how they affect sharpness and ability to capture fine structure.
+        Larger widths and higher \(L\) values sharpen tiny features, but also risk overfitting or ringing.
+      </p>
+
+      <div class="gallery gallery--bigger" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_fox_width_L_grid_placeholder.png" alt="Fox width x L grid (placeholder)">
+          <figcaption>Fox — Grid of final reconstructions for different widths and PE levels (placeholder).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_golden_gate_width_L_grid_placeholder.png" alt="Golden Gate width x L grid (placeholder)">
+          <figcaption>Golden Gate — Same hyperparameter sweep (placeholder).</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:16px;">PSNR Curves</h4>
+      <p>
+        PSNR climbs quickly during the first few hundred iterations and then gradually plateaus as the MLP saturates.
+        This matches the visual impression: most structure appears early, with fine-tuning later.
+      </p>
+
+      <div class="two" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_fox_psnr_placeholder.png" alt="Fox PSNR curve (placeholder)">
+          <figcaption>Fox — PSNR vs. iteration (placeholder).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_golden_gate_psnr_placeholder.png" alt="Golden Gate PSNR curve (placeholder)">
+          <figcaption>Golden Gate — PSNR curve (placeholder).</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Part 2 -->
+    <section class="card" id="part2">
+      <h3>Part 2 — Fitting a Neural Radiance Field from Multi-view Images</h3>
+      <p>
+        With the 2D warm-up working, I implemented a full NeRF for the Lego dataset.
+        The pipeline:
+        (1) load calibrated cameras, (2) shoot rays through each pixel,
+        (3) sample points along rays, (4) predict density and color with a NeRF network,
+        and (5) volume render the result and compare to ground-truth images.
+      </p>
+
+      <h4 style="margin-top:12px;">Part 2.1 — Creating Rays from Cameras</h4>
+      <p>
+        Given per-image intrinsics and extrinsics, I created rays by unprojecting pixel centers to camera space,
+        lifting them into 3D, and transforming them into world coordinates.
+        Directions are normalized so every ray is represented as
+        \(\mathbf{r}(t) = \mathbf{o} + t\mathbf{d}\).
+      </p>
+      <ul>
+        <li>A dataset loader normalizes RGB values and stores camera matrices plus intrinsics.</li>
+        <li><code>pixel_to_camera</code> inverts \(K\) to map UVs onto the image plane at unit depth.</li>
+        <li><code>transform</code> applies the camera-to-world pose and extracts ray origins and directions.</li>
+      </ul>
+
+      <h4 style="margin-top:12px;">Part 2.2 — Sampling Points along Rays</h4>
+      <p>
+        For each ray, I sample depth values between near and far bounds, then convert them into 3D positions
+        by \(\mathbf{x} = \mathbf{o} + t\mathbf{d}\).
+        An optional perturbation adds jitter to depths for stratified sampling, which reduces aliasing.
+      </p>
+      <ul>
+        <li>Randomly sample ~10k rays per iteration to fit into GPU memory.</li>
+        <li>Evenly spaced depths between near and far, with optional noise for stratification.</li>
+        <li>3D sample points are passed to the NeRF network for density and color.</li>
+      </ul>
+
+      <h4 style="margin-top:12px;">Part 2.3 — Precomputing Rays</h4>
+      <p>
+        To avoid repeating the same ray math on every step, I precomputed all rays once.
+        A <code>RaysData</code> structure builds grids of pixel centers for each image, converts them to rays,
+        then flattens and caches everything; training just indexes into these tensors.
+      </p>
+      <ul>
+        <li>Create a meshgrid of pixel centers with a 0.5 offset for each view.</li>
+        <li>Convert them into origins, directions, and RGB targets, then concatenate over images.</li>
+        <li>Ray sampling reduces to indexing into precomputed arrays.</li>
+      </ul>
+
+      <h4 style="margin-top:12px;">Part 2.4 — NeRF Network</h4>
+      <p>
+        The NeRF model uses sinusoidal positional encodings for both 3D positions and view directions.
+        Several ReLU layers process the positional encoding with a skip connection, forming a latent feature.
+        One head outputs density (clamped to positive via ReLU), and another head, conditioned on view direction,
+        outputs RGB through a sigmoid.
+      </p>
+      <ul>
+        <li>Position encoding maps 3D points to a higher-dimensional space (e.g., 63 channels).</li>
+        <li>View direction encoding adds a smaller set of frequencies (e.g., 24 channels).</li>
+        <li>A skip connection after several layers improves gradient flow for high-frequency details.</li>
+      </ul>
+
+      <h4 style="margin-top:12px;">Part 2.5 — Volume Rendering</h4>
+      <p>
+        The renderer converts predicted densities into alpha values, accumulates transmittance along the ray,
+        and blends colors using those weights. The implementation avoids in-place operations so autograd
+        can backpropagate through all steps.
+      </p>
+      <ul>
+        <li>\(\alpha = 1 - \exp(-\sigma \cdot \Delta t)\) at each sample point.</li>
+        <li>Transmittance is the cumulative product of \((1 - \alpha)\) along the ray.</li>
+        <li>Final color is a weighted sum of per-sample colors with these transmittance-based weights.</li>
+      </ul>
+
+      <div class="two" style="margin-top:12px;">
+        <figure class="thumb">
+          <img src="./media/p4_lego_rays_samples_placeholder.png" alt="Lego rays & samples visualization (placeholder)">
+          <figcaption>Lego — Rays &amp; sampled points overlayed in 3D (placeholder).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_lego_rays_one_cam_placeholder.png" alt="Lego rays from one camera (placeholder)">
+          <figcaption>Lego — Rays from a single validation camera (placeholder).</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:16px;">Training on Lego</h4>
+      <p>
+        During training, I periodically rendered validation images along with PSNR curves.
+        Early iterations capture coarse geometry, while later ones refine the small Lego details, shadows, and
+        specular highlights.
+      </p>
+
+      <div class="gallery gallery--bigger" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_lego_train_steps_placeholder.png" alt="Lego training steps (placeholder)">
+          <figcaption>Lego — Validation renders over training (placeholder).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_lego_psnr_placeholder.png" alt="Lego validation PSNR (placeholder)">
+          <figcaption>Lego — Validation PSNR curve (placeholder).</figcaption>
+        </figure>
+      </div>
+
+      <div class="two" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_lego_spherical_render_placeholder.png" alt="Lego spherical render (placeholder)">
+          <figcaption>Lego — Spherical render / orbit around the trained NeRF (placeholder).</figcaption>
+        </figure>
+        <div class="note">
+          <strong>Takeaway.</strong>
+          <p style="margin-top:8px;">
+            Once the pipeline is wired correctly, NeRF transforms the static Lego snapshots into a coherent 3D scene.
+            The orbit render shows consistent geometry and lighting even for cameras never seen during training.
+          </p>
+        </div>
+      </div>
+
+      <h4 style="margin-top:16px;">Part 2.6 — Training on My Own Data</h4>
+      <p>
+        After validating the implementation on Lego, I turned the same code on my captured “lafufu” object.
+        I reused the recommended configuration but found that the model plateaued at a relatively low PSNR,
+        so the reconstruction stayed softer and blurrier than the Lego run.
+      </p>
+
+      <h4 style="margin-top:10px;">Training Configuration</h4>
+      <ul>
+        <li>Device selection: prefer MPS, then CUDA, else CPU.</li>
+        <li>num_samples = 64, near = 0.02, far = 0.5 ⇒ step size = (far − near) / num_samples.</li>
+        <li>batch_size = 10,000 rays, learning_rate = 5e-4 (Adam), num_iters = 10,000.</li>
+        <li>chunk_size = 2,048 on MPS (4,096 otherwise) to respect memory limits.</li>
+      </ul>
+
+      <h4 style="margin-top:10px;">Debugging Attempts</h4>
+      <ul>
+        <li>Progressive training: starting with fewer rays/samples for quick feedback before scaling up.</li>
+        <li>Tweaked near/far bounds to better fit the captured geometry.</li>
+        <li>Extended iteration counts and tried different learning rate schedules.</li>
+      </ul>
+      <p>
+        Despite these tweaks, PSNR hovered around ~11 dB for this scene, which limited visual sharpness.
+        It’s a good reminder that data quality and coverage matter just as much as model architecture.
+      </p>
+
+      <div class="gallery gallery--bigger" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_custom_loss_curve_placeholder.png" alt="Custom scene training loss (placeholder)">
+          <figcaption>Custom scene — Training loss over time (placeholder).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_custom_psnr_placeholder.png" alt="Custom scene PSNR (placeholder)">
+          <figcaption>Custom scene — PSNR progression (placeholder).</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:14px;">Intermediate Renders</h4>
+      <p>
+        Below are intermediate and final renders from the custom scene. Geometry is recognizable,
+        but edges and textures never become as crisp as the Lego reconstruction.
+      </p>
+
+      <div class="gallery gallery--bigger" style="margin-top:10px;">
+        <figure class="thumb">
+          <img src="./media/p4_custom_intermediate1_placeholder.png" alt="Custom intermediate render 1 (placeholder)">
+          <figcaption>Custom scene — Early iteration render (placeholder).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/p4_custom_intermediate2_placeholder.png" alt="Custom intermediate render 2 (placeholder)">
+          <figcaption>Custom scene — Later iteration render (placeholder).</figcaption>
+        </figure>
+      </div>
+
+      <div class="note" style="margin-top:12px;">
+        <strong>Thoughts.</strong>
+        <p style="margin-top:6px;">
+          Implementing NeRF end-to-end was a great exercise in combining geometry, sampling, and deep learning.
+          The Lego dataset showcases the full power of the method; my own captures highlighted how sensitive NeRF is
+          to pose quality, coverage, and scene complexity.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>© <span id="year"></span> Sarah Kiefer — All Rights Reserved</footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
