@@ -105,23 +105,6 @@
         <li>Exported undistorted images and camera parameters into the NeRF dataset format for later training.</li>
       </ul>
 
-      <h4 style="margin-top:14px;">Camera Frustum Visualizations</h4>
-      <p>
-        COLMAP’s reconstruction can be visualized as camera frustums orbiting the object. Below I show an orbit view
-        and a closer zoom, where you can see the cameras nicely distributed around the scene.
-      </p>
-
-      <div class="two" style="margin-top:10px;">
-        <figure class="thumb">
-          <img src="./media/p4_frustums_orbit_placeholder.png" alt="Frustums orbit view (placeholder)">
-          <figcaption>Frustums — Orbit view around the object (placeholder for COLMAP/Viser screenshot).</figcaption>
-        </figure>
-        <figure class="thumb">
-          <img src="./media/p4_frustums_close_placeholder.png" alt="Frustums close view (placeholder)">
-          <figcaption>Frustums — Close-up of cameras densely sampling the object (placeholder).</figcaption>
-        </figure>
-      </div>
-
       <h4 style="margin-top:16px;">Part 0.1 — Calibrating the Camera</h4>
       <p>
         I captured the checkerboard/ArUco target from many angles and used OpenCV’s ArUco utilities to solve for the intrinsics.
@@ -274,8 +257,8 @@ MLP(
         Early on, the model roughly captures colors and coarse shapes; later iterations refine edges and textures.
       </p>
 
-      <div class="two" style="margin-top:10px;">
-        <figure class="thumb">
+      <div style="margin-top:10px;">
+        <figure class="thumb" style="margin-bottom:10px;">
           <img src="./media/1foxtrainingprog.png" alt="Fox training progression">
           <figcaption>Fox — Training snapshots over iterations.</figcaption>
         </figure>
@@ -284,6 +267,7 @@ MLP(
           <figcaption>Kitten — Training snapshots over iterations.</figcaption>
         </figure>
       </div>
+
 
       <h4 style="margin-top:16px;">Positional Encoding &amp; Width Sweep</h4>
       <p>
@@ -439,63 +423,78 @@ MLP(
           <strong>Takeaway.</strong>
           <p style="margin-top:8px;">
             After training, the model turns a set of 2D Lego photos into a 3D scene that can be
-            rendered smoothly from new viewpoints.
+            rendered smoothly from new viewpoints. Cool!
           </p>
         </div>
       </div>
 
+      <section class="card" id="bells-depth">
+  <h3>Bells &amp; Whistles — Lego Depth Video</h3>
+  <p>
+    For this bell &amp; whistle, I render a depth video of the Lego scene instead of RGB.
+    During volume rendering, each sample already has a 3D position and thus a depth
+    value along the ray. Rather than compositing per-sample colors, I composite the
+    per-sample depths using the same NeRF weights.
+  </p>
+  <p>
+    Specifically, I reuse the alpha and transmittance from the color renderer, but
+    replace the colors with the depths at each sample. The final pixel depth is the
+    weighted sum of these depths. I then normalize this depth image for visualization
+    and render it along the camera path to get a depth-map orbit of the Lego scene.
+  </p>
+
+  <div class="two" style="margin-top:10px;">
+    <figure class="thumb" style="max-width:480px; margin-left:auto; margin-right:auto;">
+      <img src="./media/2.5bells_lego_depth.gif" alt="Lego depth-map orbit render">
+      <figcaption>
+        Lego — predicted depth instead of RGB.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+
 
       <h4 style="margin-top:16px;">Part 2.6 — Training on My Own Data</h4>
       <p>
-        After validating the implementation on Lego, I turned the same code on my captured cow object.
+        After validating the implementation on Lego, I tried to use the same process on my cow object.
         I reused the recommended configuration but found that the model plateaued at a relatively low PSNR,
         so the reconstruction stayed softer and blurrier than the Lego run.
       </p>
 
       <h4 style="margin-top:10px;">Training Configuration</h4>
       <ul>
-        <li>Device selection: prefer MPS, then CUDA, else CPU.</li>
+        <li>Device selection: used cuda for the fastest training times</li>
         <li>num_samples = 64, near = 0.02, far = 0.5 ⇒ step size = (far − near) / num_samples.</li>
         <li>batch_size = 10,000 rays, learning_rate = 5e-4 (Adam), num_iters = 10,000.</li>
-        <li>chunk_size = 2,048 on MPS (4,096 otherwise) to respect memory limits.</li>
+        <li>chunk_size = 2,048</li>
       </ul>
 
       <h4 style="margin-top:10px;">Debugging Attempts</h4>
       <ul>
-        <li>Progressive training: starting with fewer rays/samples for quick feedback before scaling up.</li>
         <li>Tweaked near/far bounds to better fit the captured geometry.</li>
         <li>Extended iteration counts and tried different learning rate schedules.</li>
       </ul>
       <p>
-        Despite these tweaks, PSNR hovered around ~11 dB for this scene, which limited visual sharpness.
-        It’s a good reminder that data quality and coverage matter just as much as model architecture.
+        Despite these tweaks, PSNR hovered around ~12 dB for this scene, which limited visual sharpness.
+        It’s a reminder that hyperparameter tuning and data quality are crucial for NeRF to work.
       </p>
 
       <div class="gallery gallery--bigger" style="margin-top:10px;">
         <figure class="thumb">
-          <img src="./media/p4_custom_loss_curve_placeholder.png" alt="Custom scene training loss (placeholder)">
-          <figcaption>Custom scene — Training loss over time (placeholder).</figcaption>
+          <img src="./media/2.6trainingprog.png" alt="Cow scene training progression">
+          <figcaption>Cow scene — training renders over iterations.</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/p4_custom_psnr_placeholder.png" alt="Custom scene PSNR (placeholder)">
-          <figcaption>Custom scene — PSNR progression (placeholder).</figcaption>
+          <img src="./media/2.6cowpsnr.png" alt="Cow scene validation PSNR">
+          <figcaption>Cow scene — validation PSNR.</figcaption>
         </figure>
       </div>
 
-      <h4 style="margin-top:14px;">Intermediate Renders</h4>
-      <p>
-        Below are intermediate and final renders from the custom scene. Geometry is recognizable,
-        but edges and textures never become as crisp as the Lego reconstruction.
-      </p>
-
       <div class="gallery gallery--bigger" style="margin-top:10px;">
         <figure class="thumb">
-          <img src="./media/p4_custom_intermediate1_placeholder.png" alt="Custom intermediate render 1 (placeholder)">
-          <figcaption>Custom scene — Early iteration render (placeholder).</figcaption>
-        </figure>
-        <figure class="thumb">
-          <img src="./media/p4_custom_intermediate2_placeholder.png" alt="Custom intermediate render 2 (placeholder)">
-          <figcaption>Custom scene — Later iteration render (placeholder).</figcaption>
+          <img src="./media/2.6cow_orbit.gif" alt="Cow scene orbit render">
+          <figcaption>Cow scene — orbit render of the learned NeRF.</figcaption>
         </figure>
       </div>
 
@@ -503,7 +502,7 @@ MLP(
         <strong>Thoughts.</strong>
         <p style="margin-top:6px;">
           Implementing NeRF end-to-end was a great exercise in combining geometry, sampling, and deep learning.
-          The Lego dataset showcases the full power of the method; my own captures highlighted how sensitive NeRF is
+          The Lego dataset showcases the full power of the method; my own captures highlighted how sensitive NeRF can be
           to pose quality, coverage, and scene complexity.
         </p>
       </div>
