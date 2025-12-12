@@ -29,6 +29,7 @@
     @media (max-width: 640px){ .gallery{ grid-template-columns:1fr;} }
 
     .gallery.gallery--two { grid-template-columns:repeat(2,1fr); }
+    .gallery.gallery--three { grid-template-columns:repeat(3,1fr); }
     .gallery.gallery--wide { grid-template-columns:1fr; }
 
     .two { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--gap); }
@@ -43,6 +44,20 @@
     .section-label { font-size:.9rem; text-transform:uppercase; letter-spacing:.08em; color:#9ca3af; margin-bottom:4px; }
     .center { text-align:center; }
   </style>
+
+  <!-- Enable MathJax for LaTeX-style formulas -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
   <header>
@@ -91,11 +106,11 @@
           <figcaption>20 steps.</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/campanile_dinos_2_40%20steps.png" alt="Dinosaurs on the Campanile — 40 steps">
+          <img src="./media/campanile_dinos_2_40_steps.png" alt="Dinosaurs on the Campanile — 40 steps">
           <figcaption>40 steps.</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/campanile_dinos_3_80%20steps.png" alt="Dinosaurs on the Campanile — 80 steps">
+          <img src="./media/campanile_dinos_3_80_steps.png" alt="Dinosaurs on the Campanile — 80 steps">
           <figcaption>80 steps.</figcaption>
         </figure>
       </div>
@@ -108,11 +123,11 @@
           <figcaption>20 steps.</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/dog_surfing_2_40%20steps.png" alt="Dog surfing — 40 steps">
+          <img src="./media/dog_surfing_2_40 steps.png" alt="Dog surfing — 40 steps">
           <figcaption>40 steps.</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/dog_surfing_3_80%20steps.png" alt="Dog surfing — 80 steps">
+          <img src="./media/dog_surfing_3_80 steps.png" alt="Dog surfing — 80 steps">
           <figcaption>80 steps.</figcaption>
         </figure>
       </div>
@@ -455,19 +470,350 @@
       <h3>Part B — Training My Own Diffusion Models</h3>
       <p>
         In Part B I stepped away from DeepFloyd IF and trained my own diffusion-style models from scratch on
-        MNIST. The goal was to mirror the building blocks used in powerful text-to-image models on a much
-        smaller scale and to see how each modeling choice affects the learned denoiser.
+        MNIST. The goal was to mirror, in miniature, the building blocks used in large text-to-image models
+        and to see how each modeling choice affects the learned denoiser and sampler.
+      </p>
+
+      <h4>UNet Architecture</h4>
+      <p>
+        I used a compact UNet tailored to \(28 \times 28\) MNIST digits. The encoder progressively downsamples
+        the spatial resolution while increasing the number of channels, and the decoder mirrors this structure
+        with skip connections that pass high-resolution details across the bottleneck. This keeps the model
+        lightweight but expressive enough to capture digit structure and noise patterns.
+      </p>
+      <figure class="thumb" style="max-width:640px; margin-top:8px;">
+        <img src="./media/PARTB1.1_network_viz.png" alt="MNIST UNet denoiser architecture diagram">
+        <figcaption>Architecture of the MNIST UNet denoiser used throughout Part B.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:20px;">1.2 Training a Single-Step Denoiser</h4>
+      <p>
+        Before training, I visualized how Gaussian noise with different standard deviations \(\sigma\)
+        alters the digits. As \(\sigma\) increases from 0.0 to 1.0, strokes become fuzzier, strokes break
+        apart, and eventually the images collapse into pure noise. This gives intuition for how hard the
+        denoising task becomes at higher noise levels.
+      </p>
+      <figure class="thumb" style="max-width:640px; margin-top:8px;">
+        <img src="./media/PARTB1.1_view_noise_on_4_digits.png" alt="Visualization of different sigma values on MNIST digits">
+        <figcaption>Noise visualization: the same digits corrupted with increasing \(\sigma\).</figcaption>
+      </figure>
+
+      <h5 style="margin-top:18px;">1.2.1 Training</h5>
+      <p>
+        I trained the UNet denoiser on MNIST for 5 epochs. Each mini-batch of digits \(x\) was corrupted on the fly
+        with fixed-variance Gaussian noise \(\epsilon \sim \mathcal{N}(0, \sigma^2 I)\), producing noisy inputs
+        \(z = x + \epsilon\). The network was supervised to predict the clean image \(x\) directly with a mean
+        squared error loss \(\|f_\theta(z) - x\|_2^2\). With a batch size of 256, hidden dimension
+        \(D = 128\), and Adam (learning rate \(10^{-4}\)), the model quickly learned to undo much of the corruption.
+      </p>
+      <p>
+        Qualitatively, after 1 epoch the denoised outputs are already recognizable but still a bit blurry and
+        over-smoothed. By epoch 5, the model has sharpened the strokes and produces digits that are much closer
+        to the originals.
+      </p>
+      <figure class="thumb" style="margin-top:8px;">
+        <img src="./media/PARTB1.2.1_training_digits.png" alt="Denoised digits after 1 and 5 epochs of training">
+        <figcaption>Single-step denoiser applied to test digits after 1 vs. 5 epochs of training.</figcaption>
+      </figure>
+
+      <p style="margin-top:12px;">
+        Over 5 epochs, the training loss decreases smoothly and roughly plateaus by the end, indicating that
+        the UNet is converging on a stable mapping from noisy digits to their clean counterparts.
+      </p>
+      <figure class="thumb" style="max-width:640px; margin-top:6px;">
+        <img src="./media/PARTB1.2.1_training_loss.png" alt="Training loss curve for single-step denoiser">
+        <figcaption>Single-step denoiser training loss over 5 epochs.</figcaption>
+      </figure>
+
+      <h5 style="margin-top:20px;">1.2.2 Out-of-Distribution Testing</h5>
+      <p>
+        The single-step denoiser was trained at one fixed noise level, but at test time we can feed it digits
+        corrupted with many different \(\sigma\) values. To probe how robust the model is, I used the same
+        set of test digits and varied \(\sigma\) from very small (almost clean) to very large (almost pure noise),
+        then visualized the outputs.
+      </p>
+      <p>
+        Even though the model never saw these noise levels during training, it still produces meaningful
+        reconstructions across a broad range. As \(\sigma\) becomes tiny, there is little to fix and the
+        denoiser tends to leave the input mostly unchanged. As \(\sigma\) becomes very large, the input
+        carries almost no recognizable structure and the model cannot fully recover the digit, but it still
+        outputs something digit-like instead of pure noise.
+      </p>
+
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/PARTB1.2.2_sigma0.png" alt="Denoising results at sigma = 0.0">
+        <figcaption>Denoising test digits with \(\sigma = 0.0\) (essentially clean inputs).</figcaption>
+      </figure>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/PARTB1.2.2_sigma0.2.png" alt="Denoising results at sigma = 0.2">
+        <figcaption>Denoising at \(\sigma = 0.2\): mild corruption, easy to clean up.</figcaption>
+      </figure>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/PARTB1.2.2_sigma0.4.png" alt="Denoising results at sigma = 0.4">
+        <figcaption>Denoising at \(\sigma = 0.4\): moderate noise, still very readable digits.</figcaption>
+      </figure>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/PARTB1.2.2_sigma0.5.png" alt="Denoising results at sigma = 0.5">
+        <figcaption>Denoising at \(\sigma = 0.5\): close to the training noise level.</figcaption>
+      </figure>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/PARTB1.2.2_sigma0.6.png" alt="Denoising results at sigma = 0.6">
+        <figcaption>Denoising at \(\sigma = 0.6\): quality starts to noticeably degrade.</figcaption>
+      </figure>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/PARTB1.2.2_sigma0.8.png" alt="Denoising results at sigma = 0.8">
+        <figcaption>Denoising at \(\sigma = 0.8\): digits are still hinted at but increasingly ambiguous.</figcaption>
+      </figure>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/PARTB1.2.2_sigma1.png" alt="Denoising results at sigma = 1.0">
+        <figcaption>Denoising at \(\sigma = 1.0\): inputs are close to pure noise, so the denoiser struggles.</figcaption>
+      </figure>
+
+      <h5 style="margin-top:22px;">1.2.3 Denoising Pure Noise</h5>
+      <p>
+        To turn denoising into a purely generative task, we would like the model to start from <em>only</em> noise
+        and hallucinate a plausible digit. Concretely, we sample a blank canvas
+        \(z \sim \mathcal{N}(0, \sigma^2 I)\) with \(\sigma = 0.5\) and ask the network to map it directly to a
+        clean digit \(x\). This is a much harder problem than cleaning up a noisy version of an actual digit,
+        because there is no underlying structure in the input to latch onto.
+      </p>
+      <p>
+        I reused the same training setup as in 1.2.1, but instead of corrupting real digits, the inputs were
+        pure noise samples \(z \sim \mathcal{N}(0, 0.5^2 I)\). The target outputs were real MNIST digits.
+        After 1 epoch the outputs show faint digit-like blobs, and after 5 epochs the model produces more
+        consistent shapes, but they still look like soft averages rather than crisp digits.
+      </p>
+
+      <div class="gallery gallery--two" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/PARTB1.2.3_epoch1.png" alt="Pure-noise denoising after 1 epoch">
+          <figcaption>After 1 epoch: faint outlines of digit structure start to appear.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/PARTB1.2.3_epoch5.png" alt="Pure-noise denoising after 5 epochs">
+          <figcaption>After 5 epochs: clearer shapes, but still blurry and averaged.</figcaption>
+        </figure>
+      </div>
+
+      <p style="margin-top:12px;">
+        With an MSE loss, the &ldquo;best&rdquo; prediction for a given input is the average (centroid) of all
+        training targets that the model thinks could correspond to that input. In the context of MNIST, that
+        means the model is effectively trying to output the mean image over all plausible digits it has seen
+        for similar inputs. When you feed it something that doesn’t look like any specific digit (like strong
+        noise or an out-of-distribution input), the model has no clear match and instead falls back to something
+        like the overall average digit it has learned. Averaging over many different digits washes out the
+        distinctive strokes of each number, so instead of getting a crisp &ldquo;3&rdquo; or &ldquo;7,&rdquo;
+        you get a blurry, blob-like amalgamation where the common structure of many digits overlaps—this is the
+        centroid of the training images under the model’s learned representation.
+      </p>
+
+      <p style="margin-top:10px;">
+        The training loss curve still decreases as the model gets better at mapping noise to plausible digits,
+        but the outputs never become as sharp as in the standard denoising setup, reflecting the inherent
+        ambiguity of the task.
+      </p>
+      <figure class="thumb" style="max-width:640px; margin-top:6px;">
+        <img src="./media/PARTB1.2.3_trainingloss.png" alt="Training loss curve for pure-noise denoiser">
+        <figcaption>Training loss for the pure-noise denoiser over 5 epochs.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:26px;">Part B.2 — Training a Flow Matching Model</h4>
+      <p>
+        The second half of Part B moves from discrete-time denoising to <em>flow matching</em>, where we train
+        the network to predict a continuous-time velocity field that carries a simple prior (Gaussian noise)
+        into the data distribution. Instead of predicting a clean image in one step, the UNet predicts how the
+        image should change at each time \(t \in [0, 1]\).
+      </p>
+
+      <h5 style="margin-top:14px;">2.1 Time Conditioning</h5>
+      <p>
+        To let the UNet know <em>where</em> it is along the flow, I added time conditioning. Each scalar
+        timestep \(t\) is encoded with a small MLP into a time embedding, and this embedding is injected into
+        the network through fully connected blocks (FCBlocks) that modulate intermediate feature maps.
+        Intuitively, the UNet learns one shared architecture that behaves differently at early vs. late times.
+      </p>
+      <figure class="thumb" style="max-width:640px; margin-top:8px;">
+        <img src="./media/PARTB2.1_arch.png" alt="Time-conditioned UNet architecture diagram">
+        <figcaption>Time-conditioned UNet with FCBlocks injecting the timestep into multiple layers.</figcaption>
+      </figure>
+
+      <h5 style="margin-top:18px;">2.2 Training the UNet</h5>
+      <p>
+        For flow matching, we train the network to approximate an ideal velocity field that moves samples from
+        a simple distribution to the data. A common setup is:
       </p>
       <ul>
-        <li><strong>Single-step denoiser.</strong> I began with a model that observes a noisy digit and predicts the clean digit in one shot.</li>
-        <li><strong>Time-conditioned denoising.</strong> I added timestep embeddings so the network could adapt to different noise levels.</li>
-        <li><strong>Class conditioning.</strong> I trained a classifier-guided denoiser that can steer generations toward specific digits.</li>
-        <li><strong>Flow-matching sampler.</strong> Finally, I implemented a continuous-time flow-matching model, which views denoising as learning a velocity field rather than discrete transitions.</li>
+        <li>Sample a clean digit \(x_1\) from MNIST.</li>
+        <li>Sample a noise vector \(x_0 \sim \mathcal{N}(0, I)\).</li>
+        <li>Sample a random time \(t \sim \mathcal{U}(0, 1)\).</li>
+        <li>Interpolate \(x_t = (1 - t) x_0 + t x_1\).</li>
       </ul>
       <p>
-        Together, these experiments highlight how diffusion models gradually learn the score (or noise)
-        of the data distribution and how conditioning signals&mdash;whether time, text, or class labels&mdash;can
-        all be incorporated through essentially the same interface.
+        The ideal velocity along this straight-line path is
+        \(v^\star(x_t, t) = \frac{d}{dt} x_t = x_1 - x_0\), which does not depend on \(t\).
+        The time-conditioned UNet \(v_\theta(x_t, t)\) is trained to minimize the mean squared error
+      </p>
+      <p class="note" style="margin-top:6px;">
+        \[
+        \mathcal{L}(\theta)
+        = \mathbb{E}_{x_0, x_1, t} \Big[ \big\| v_\theta(x_t, t) - (x_1 - x_0) \big\|_2^2 \Big].
+        \]
+      </p>
+      <p>
+        Intuitively, the network sees points along interpolated segments between random noise and real digits,
+        and learns how to &ldquo;push&rdquo; them in the right direction to reach the data manifold.
+      </p>
+      <figure class="thumb" style="max-width:640px; margin-top:8px;">
+        <img src="./media/PARTB2.2_trainingloss.png" alt="Training loss curve for flow-matching UNet over 10 epochs">
+        <figcaption>Flow-matching UNet training loss over 10 epochs.</figcaption>
+      </figure>
+
+      <h5 style="margin-top:18px;">2.3 Sampling from the UNet</h5>
+      <p>
+        Once the flow-matching UNet is trained, we can generate digits by integrating the learned velocity
+        field from time 0 to time 1. Sampling works as follows:
+      </p>
+      <ul>
+        <li>Sample an initial point \(x_0 \sim \mathcal{N}(0, I)\).</li>
+        <li>Choose a sequence of times \(0 = t_0 &lt; t_1 &lt; \dots &lt; t_K = 1\).</li>
+        <li>Use an ODE solver (Euler integration here) to update
+          \(x_{k+1} = x_k + (t_{k+1} - t_k)\, v_\theta(x_k, t_k).\)</li>
+      </ul>
+      <p>
+        After integrating up to \(t = 1\), \(x_K\) should lie near the data distribution and look like a clean
+        MNIST digit. The figure below shows samples after different amounts of training; as the model improves,
+        the digits become sharper and more class-consistent.
+      </p>
+
+      <div class="gallery gallery--three" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/PARTB2.3_epoch1.png" alt="Flow-matching samples after 1 epoch">
+          <figcaption>Epoch 1: rough shapes, many ambiguous digits.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/PARTB2.3_epoch5.png" alt="Flow-matching samples after 5 epochs">
+          <figcaption>Epoch 5: clearer strokes and better separation between classes.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/PARTB2.3_epoch10.png" alt="Flow-matching samples after 10 epochs">
+          <figcaption>Epoch 10: digits are recognizable and fairly clean.</figcaption>
+        </figure>
+      </div>
+
+      <h5 style="margin-top:22px;">2.4 Adding Class-Conditioning to the UNet</h5>
+      <p>
+        Next, I added class conditioning so that the flow can be steered to produce specific digits on demand.
+        Each MNIST label \(y \in \{0, \dots, 9\}\) is embedded into a learned vector and injected into the UNet
+        alongside the time embedding. The architecture now takes inputs \((x_t, t, y)\) and produces a
+        class-conditional velocity \(v_\theta(x_t, t, y)\).
+      </p>
+      <p>
+        Mechanically, the label embedding is added into the same FCBlocks used for time conditioning, so the
+        feature maps &ldquo;know&rdquo; both what timestep they are at and which digit they should aim for.
+        This is conceptually similar to how text prompts condition large diffusion models, but with a much
+        simpler label space.
+      </p>
+
+      <h5 style="margin-top:18px;">2.5 Training the Class-Conditional UNet</h5>
+      <p>
+        The training objective mirrors the unconditional flow matching loss, but now everything is conditioned
+        on the class label:
+      </p>
+      <ul>
+        <li>Sample a label \(y\).</li>
+        <li>Sample a clean digit \(x_1\) of class \(y\) from MNIST.</li>
+        <li>Sample \(x_0 \sim \mathcal{N}(0, I)\) and \(t \sim \mathcal{U}(0,1)\).</li>
+        <li>Form the interpolated point \(x_t = (1 - t)x_0 + t x_1\).</li>
+      </ul>
+      <p class="note" style="margin-top:6px;">
+        \[
+        \mathcal{L}(\theta)
+        = \mathbb{E}_{x_0, x_1, y, t}
+          \Big[ \big\| v_\theta(x_t, t, y) - (x_1 - x_0) \big\|_2^2 \Big].
+        \]
+      </p>
+      <p>
+        Because the model now knows which digit class to target, the supervision is more specific: instead
+        of just &ldquo;move toward some MNIST digit,&rdquo; it learns how to move specifically toward a
+        digit of class \(y\).
+      </p>
+      <figure class="thumb" style="max-width:640px; margin-top:8px;">
+        <img src="./media/PARTB2.5_trainingloss.png" alt="Training loss curve for class-conditioned flow-matching UNet">
+        <figcaption>Class-conditioned flow-matching training loss over 10 epochs.</figcaption>
+      </figure>
+
+      <h5 style="margin-top:18px;">2.6 Sampling from the Class-Conditional UNet</h5>
+      <p>
+        Sampling now works just like in the unconditional case, but we fix a label \(y\) and keep it
+        constant throughout the integration:
+      </p>
+      <ul>
+        <li>Pick a desired class \(y\) (e.g., &ldquo;3&rdquo;).</li>
+        <li>Sample \(x_0 \sim \mathcal{N}(0, I)\).</li>
+        <li>Integrate \(x_{k+1} = x_k + (t_{k+1} - t_k)\, v_\theta(x_k, t_k, y)\) from \(t=0\) to \(t=1\).</li>
+      </ul>
+      <p>
+        The resulting samples cluster strongly around the requested digit class. Below are grids of samples
+        after 1, 5, and 10 epochs of training.
+      </p>
+
+      <div class="gallery gallery--three" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/PARTB2.6_epoch1.png" alt="Class-conditioned samples after 1 epoch">
+          <figcaption>Epoch 1: digits are noisy and some classes are hard to distinguish.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/PARTB2.6_epoch5.png" alt="Class-conditioned samples after 5 epochs">
+          <figcaption>Epoch 5: structure improves, with clearer class separation.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/PARTB2.6_epoch10.png" alt="Class-conditioned samples after 10 epochs">
+          <figcaption>Epoch 10: digits are sharp and reliably match the requested labels.</figcaption>
+        </figure>
+      </div>
+
+      <p style="margin-top:12px;">
+        Compared to the unconditional flow model, the class-conditioned version produces noticeably crisper
+        digits and far fewer ambiguous samples. Conditioning removes much of the multimodality the model has
+        to juggle: instead of representing all digits at once, it can specialize its velocity field to one
+        class at a time, which improves both quality and controllability.
+      </p>
+
+      <h5 style="margin-top:22px;">2.6 (No Scheduler Variant)</h5>
+      <p>
+        In the default setup, sampling uses a scheduler: a predefined sequence of timesteps \(t_0, t_1, \ldots, t_K\)
+        that determines how we march from 0 to 1. As a final experiment, I removed the scheduler and instead
+        used a very simple integration scheme with evenly spaced time steps and no additional time-dependent
+        weighting or heuristics.
+      </p>
+      <p>
+        In other words, rather than carefully tuning how large each step in time should be, I simply divided
+        the interval \([0,1]\) into equal pieces and applied the same Euler update at each step. This makes
+        the sampler conceptually simpler&mdash;the network itself has to handle the varying difficulty of early
+        vs. late times without extra help.
+      </p>
+
+      <div class="gallery gallery--three" style="margin-top:8px;">
+        <figure class="thumb">
+          <img src="./media/PARTB2.6_no_sched_epoch1.png" alt="No-scheduler samples after 1 epoch">
+          <figcaption>No scheduler, epoch 1: digits are very rough and noisy.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/PARTB2.6_no_sched_epoch5.png" alt="No-scheduler samples after 5 epochs">
+          <figcaption>No scheduler, epoch 5: improved quality but still less stable than with a scheduler.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/PARTB2.6_no_sched_epoch10.png" alt="No-scheduler samples after 10 epochs">
+          <figcaption>No scheduler, epoch 10: recognizable digits, but generally blurrier and noisier.</figcaption>
+        </figure>
+      </div>
+
+      <p style="margin-top:12px;">
+        Removing the scheduler makes the method easier to describe and implement, but the price is slightly
+        worse sample quality. The scheduled sampler can devote more, smaller steps to the difficult parts of
+        the trajectory and fewer steps to the easy parts, whereas the uniform scheme spreads its capacity
+        evenly. Still, the no-scheduler variant demonstrates that the learned flow itself is strong enough
+        to yield digits without much sampling machinery, which is encouraging for simple applications.
       </p>
     </section>
   </main>
