@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P5 — Diffusion Models</title>
+  <meta name="description" content="Visual experiments with DeepFloyd IF and diffusion: prompt embeddings, denoising, classifier-free guidance, inpainting, visual illusions, and hybrid images, plus MNIST diffusion models trained from scratch." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
+
+  <style>
+    :root { --gap:16px; --line:#e5e7eb; --muted:#6b7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:#111827; background:#f8fafc; }
+    header { background:#fff; border-bottom:1px solid var(--line); }
+    .wrap, .container { max-width:1100px; margin:0 auto; padding:0 14px; }
+    header h1 { margin:12px 0; font-size:22px; }
+    nav ul { list-style:none; display:flex; gap:14px; margin:0 0 12px; padding:0; }
+    nav a { text-decoration:none; color:#374151; }
+    h2 { margin:20px 0 6px; }
+    h3 { margin:0 0 10px; }
+    h4 { margin:14px 0 6px; }
+    .muted { color:var(--muted); }
+    .card { background:#fff; border:1px solid var(--line); border-radius:.65rem; padding:18px 18px 20px; margin:18px 0; }
+    .note { padding:12px 14px; border:1px solid var(--line); border-radius:.6rem; background:#f9fafb; color:#374151; }
+
+    .gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--gap); }
+    @media (max-width: 1000px){ .gallery{ grid-template-columns:repeat(2,1fr);} }
+    @media (max-width: 640px){ .gallery{ grid-template-columns:1fr;} }
+
+    .gallery.gallery--two { grid-template-columns:repeat(2,1fr); }
+    .gallery.gallery--wide { grid-template-columns:1fr; }
+
+    .two { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--gap); }
+    @media (max-width: 820px){ .two{ grid-template-columns:1fr; } }
+
+    figure { margin:0; }
+    .thumb { background:#fff; border:1px solid var(--line); border-radius:.55rem; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+    .thumb img { width:100%; height:auto; display:block; }
+    .thumb figcaption { padding:8px 10px; font-size:.93rem; color:#4b5563; }
+    footer { max-width:1100px; margin:40px auto; padding:0 14px 30px; color:#6b7280; font-size:.9rem; }
+
+    .section-label { font-size:.9rem; text-transform:uppercase; letter-spacing:.08em; color:#9ca3af; margin-bottom:4px; }
+    .center { text-align:center; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Sarah Kiefer</h1>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="/">&larr; Home</a></li>
+          <li><a href="/cs180/">CS 180 / 280A</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="muted" style="margin:14px 0;"><a href="/cs180/">&larr; Back to CS 180</a></p>
+
+    <h2>Project 5 — Diffusion Models</h2>
+    <p class="muted">CS 180 — Introduction to Computer Vision &amp; Computational Photography</p>
+
+    <section class="card" id="overview">
+      <h3>Part A — The Power of Diffusion Models!</h3>
+      <p>
+        In this project I explored DeepFloyd IF and diffusion end-to-end. Starting from prompt embeddings and
+        the forward noising process, I worked up to denoisers driven by a large UNet, classifier-free guidance,
+        image-to-image translation, inpainting, and even illusion-style generations such as visual anagrams and
+        hybrid images. All experiments in this section were generated with a fixed random seed of <code>17</code>
+        so that results are reproducible.
+      </p>
+    </section>
+
+    <section class="card" id="part0">
+      <div class="section-label">Part 0</div>
+      <h3>Prompt Embeddings &amp; First Impressions</h3>
+      <p>
+        DeepFloyd IF is conditioned on CLIP-style text embeddings. To get a feel for how prompts steer the diffusion
+        process, I generated samples at different numbers of denoising steps while holding the seed fixed. Fewer
+        steps act like a coarse sampler; more steps refine details, textures, and global coherence.
+      </p>
+
+      <h4>Prompt: &ldquo;a photo of dinosaurs climbing the Berkeley campanile&rdquo;</h4>
+      <p class="muted">[notes about composition, how the campanile and dinosaurs emerge as steps increase]</p>
+      <div class="gallery">
+        <figure class="thumb">
+          <img src="./media/campanile_dinos_1.png" alt="Dinosaurs on the Campanile — 20 steps">
+          <figcaption>20 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/campanile_dinos_2_40%20steps.png" alt="Dinosaurs on the Campanile — 40 steps">
+          <figcaption>40 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/campanile_dinos_3_80%20steps.png" alt="Dinosaurs on the Campanile — 80 steps">
+          <figcaption>80 steps.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">Prompt: &ldquo;a photo of a dog surfing&rdquo;</h4>
+      <p class="muted">[notes on how the dog, surfboard, and water stabilize as we allow more diffusion steps]</p>
+      <div class="gallery">
+        <figure class="thumb">
+          <img src="./media/dog_surfing_1.png" alt="Dog surfing — 20 steps">
+          <figcaption>20 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/dog_surfing_2_40%20steps.png" alt="Dog surfing — 40 steps">
+          <figcaption>40 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/dog_surfing_3_80%20steps.png" alt="Dog surfing — 80 steps">
+          <figcaption>80 steps.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">Prompt: &ldquo;a tiger drinking tea with the queen&rdquo;</h4>
+      <p class="muted">[notes on how the model hallucinates royal tea party details at higher steps]</p>
+      <div class="gallery">
+        <figure class="thumb">
+          <img src="./media/queen_tiger_1.png" alt="Tiger drinking tea with the queen — 20 steps">
+          <figcaption>20 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/queen_tiger_2_40%20steps.png" alt="Tiger drinking tea with the queen — 40 steps">
+          <figcaption>40 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/queen_tiger_3_80%20steps.png" alt="Tiger drinking tea with the queen — 80 steps">
+          <figcaption>80 steps.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="card" id="part1">
+      <div class="section-label">Part 1</div>
+      <h3>Sampling Loops</h3>
+      <p>
+        To understand diffusion, I looked at both the forward process (corrupting an image with noise) and
+        the reverse process (denoising with the UNet). Each subsection below visualizes a different way of
+        moving along the diffusion trajectory.
+      </p>
+
+      <h4>1.1 Forward Process — Adding Some Noise</h4>
+      <p>
+        I implemented <code>im_noisy = forward(im, t)</code>, which draws Gaussian noise and uses the closed-form
+        forward diffusion equation \(x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon\).
+        As \(t\) grows, the Campanile image quickly loses structure and becomes nearly pure noise.
+      </p>
+      <div class="gallery">
+        <figure class="thumb">
+          <img src="./media/1.1_campanile_250.png" alt="Campanile noisy at t=250">
+          <figcaption>250 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.1_campanile_500.png" alt="Campanile noisy at t=500">
+          <figcaption>500 steps.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.1_campanile_750.png" alt="Campanile noisy at t=750">
+          <figcaption>750 steps.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">1.2 Classical Denoising</h4>
+      <p>
+        As a baseline, I treated the forward-diffused images as ordinary noisy photographs and tried
+        to denoise them with Gaussian blur. While blur can suppress high-frequency noise, it cannot
+        reconstruct the lost structure, and the results become washed-out and smeared.
+      </p>
+      <div class="gallery">
+        <figure class="thumb">
+          <img src="./media/1.2_250campanile.png" alt="Gaussian denoising at t=250">
+          <figcaption>250-step noise + Gaussian blur.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.2_500campanile.png" alt="Gaussian denoising at t=500">
+          <figcaption>500-step noise + Gaussian blur.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.2_750campanile.png" alt="Gaussian denoising at t=750">
+          <figcaption>750-step noise + Gaussian blur.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">1.3 One-Step Denoising</h4>
+      <p>
+        Next I used the pretrained UNet to predict the noise \(\hat\epsilon_\theta(x_t, t)\) at a single
+        timestep and analytically recovered \(\hat x_0\). This one-step denoiser already produces a much
+        more plausible reconstruction than classical filtering, but artifacts remain because diffusion
+        training assumes a full reverse process, not a single jump from \(t\) to 0.
+      </p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/1.3_denoiser_all_components.png" alt="One-step denoising components">
+        <figcaption>Original, noisy, and one-step denoised Campanile.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:18px;">1.4 Iterative Denoising (i_start = 10)</h4>
+      <p>
+        Here I implemented an iterative sampler: starting from a moderately noisy \(x_t\), the model
+        repeatedly applies the DDPM reverse update to walk toward lower noise levels. At each step,
+        the UNet predicts noise and we sample from the posterior over the next timestep. This produces
+        a much cleaner reconstruction and shows the image gradually sharpening over time.
+      </p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/1.4_iterative_denoising_comps.png" alt="Iterative denoising progression">
+        <figcaption>Iterative denoising from \(t=990\) downwards (every few steps) with the final estimate.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:18px;">1.5 Diffusion Model Sampling</h4>
+      <p>
+        Using the same iterative sampler but starting from pure Gaussian noise instead of an existing
+        image turns the denoiser into a generative model. The sequence below shows samples drawn from
+        DeepFloyd IF using only text conditioning and the learned diffusion dynamics.
+      </p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/1.5_noise_to_real_world_samples.png" alt="Samples from noise with diffusion">
+        <figcaption>From pure noise to diverse photorealistic samples.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:18px;">1.6 Classifier-Free Guidance (CFG)</h4>
+      <p>
+        Classifier-free guidance trades diversity for stronger prompt adherence. I implemented CFG by
+        running the UNet twice&mdash;once with the prompt embedding and once with the null embedding&mdash;and
+        combining the noise estimates with a guidance scale. Larger scales make images match the text
+        more literally but can introduce artifacts or oversaturated colors.
+      </p>
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/1.6_cfg_imgs_samples.png" alt="Classifier-free guidance samples">
+        <figcaption>Varying guidance scale: low values are subtle; high values lock onto the prompt.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:18px;">1.7 Image-to-Image Translation</h4>
+      <p>
+        Instead of sampling from pure noise, I can start from an existing image, diffuse it to a noisy
+        intermediate timestep, and then denoise with a different prompt. This performs text-controlled
+        edits while preserving coarse layout and color structure of the original.
+      </p>
+      <div class="gallery gallery--three">
+        <figure class="thumb">
+          <img src="./media/campanile_orig.png" alt="Original Campanile image">
+          <figcaption>Original Campanile.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/berkeley_seal_orig.png" alt="Original Berkeley seal">
+          <figcaption>Original Berkeley seal.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/banana_orig.png" alt="Original banana">
+          <figcaption>Original banana.</figcaption>
+        </figure>
+      </div>
+
+      <div class="gallery gallery--wide" style="margin-top:12px;">
+        <figure class="thumb">
+          <img src="./media/1.7.1_campanile_slices.png" alt="Campanile slices during translation">
+          <figcaption>Campanile: slices of the trajectory during image-to-image translation.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7.1_seal_slices.png" alt="Berkeley seal slices during translation">
+          <figcaption>Berkeley seal: diffusion slices during translation.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7_banana_slices.png" alt="Banana slices during translation">
+          <figcaption>Banana: diffusion slices during translation.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">1.7.1 Editing Web &amp; Hand-Drawn Images</h4>
+      <p>
+        I repeated the same procedure on my own sketches and on web images. Diffusion is surprisingly
+        robust: even crude line drawings become detailed paintings when denoised with rich prompts,
+        and stock photos can be stylized or reinterpreted while preserving global structure.
+      </p>
+
+      <h5>Hand-drawn images</h5>
+      <div class="gallery gallery--two">
+        <figure class="thumb">
+          <img src="./media/1.7originaldrawing2_one_pic.png" alt="Original mountain drawing">
+          <figcaption>My drawing of a mountain.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7originaldrawing_cat.png" alt="Original cat drawing">
+          <figcaption>My drawing of a cat.</figcaption>
+        </figure>
+      </div>
+
+      <div class="gallery gallery--wide" style="margin-top:12px;">
+        <figure class="thumb">
+          <img src="./media/1.7drawingmtn_slices.png" alt="Mountain drawing slices">
+          <figcaption>Diffusion slices for the mountain sketch.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7drawingcat_slices.png" alt="Cat drawing slices">
+          <figcaption>Diffusion slices for the cat sketch.</figcaption>
+        </figure>
+      </div>
+
+      <h5 style="margin-top:16px;">Web image</h5>
+      <figure class="thumb" style="max-width:520px; margin-top:6px;">
+        <img src="./media/1.7blackberries_img.png" alt="Original blackberry web image">
+        <figcaption>Original web image used for translation experiments.</figcaption>
+      </figure>
+
+      <figure class="thumb" style="margin-top:10px;">
+        <img src="./media/1.7webimg_slices.png" alt="Web image translation slices">
+        <figcaption>Slices of the diffusion trajectory for the web image.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:18px;">1.7.2 Inpainting</h4>
+      <p>
+        For inpainting, I diffuse the original image, then at each reverse step I overwrite the
+        unmasked region with the noised original and only allow the diffusion model to sample
+        inside the mask. This lets the model hallucinate new content while keeping the rest of the
+        picture fixed.
+      </p>
+      <div class="gallery gallery--three">
+        <figure class="thumb">
+          <img src="./media/1.7.2_campanile_mask.png" alt="Campanile inpainting mask and result">
+          <figcaption>Campanile: mask and inpainted tower tip.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7.2inpaint_river.png" alt="River inpainting result">
+          <figcaption>River scene: filling in water regions.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7.2inpaint_snow.png" alt="Snow inpainting result">
+          <figcaption>Snowy mountain scene: inpainting foreground.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">1.7.3 Text-Conditioned Image-to-Image Translation</h4>
+      <p>
+        Finally, I combined inpainting-style control with strong text prompts to push images toward new
+        semantics. By diffusing an input and denoising with a different prompt, the model preserves
+        coarse layout but replaces objects in a text-driven way.
+      </p>
+
+      <h5>Original images</h5>
+      <div class="gallery gallery--three">
+        <figure class="thumb">
+          <img src="./media/campanile_orig.png" alt="Original Campanile image">
+          <figcaption>Campanile.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7.2_River_inpaint_original.png" alt="Original river scene">
+          <figcaption>River scene.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7.2_mountain_original_ski.png" alt="Original snowy mountain scene">
+          <figcaption>Mountain / ski scene.</figcaption>
+        </figure>
+      </div>
+
+      <h5 style="margin-top:14px;">Translated results</h5>
+      <div class="gallery gallery--three">
+        <figure class="thumb">
+          <img src="./media/1.7.3_campanile_rocket.png" alt="Campanile turned into a rocket ship">
+          <figcaption>Prompt: &ldquo;a rocket ship&rdquo;.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7.3_dog_surfing.png" alt="River scene turned into dog surfing">
+          <figcaption>Prompt: &ldquo;a photo of a dog surfing&rdquo;.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.7.3_snowy%20village.png" alt="Mountain scene turned into snowy village">
+          <figcaption>Prompt: &ldquo;an oil painting of a snowy mountain village&rdquo;.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">1.8 Visual Anagrams</h4>
+      <p>
+        Visual anagrams are images that look like one thing upright and another thing upside-down.
+        I implemented the flip-illusion sampler, which denoises both the image and an upside-down copy
+        under different prompts, flips one of the noise estimates back, and averages them at each step.
+      </p>
+      <div class="gallery gallery--two">
+        <figure class="thumb">
+          <img src="./media/1.8_ballerina_house.png" alt="Ballerina and house visual anagram">
+          <figcaption>Upright: an oil painting of a ballerina. Upside down: a cozy house.</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.8_volcano_flowers.png" alt="Volcano and vase of flowers visual anagram">
+          <figcaption>Upright: a volcano eruption. Flipped: a vase of flowers.</figcaption>
+        </figure>
+      </div>
+
+      <h4 style="margin-top:18px;">1.9 Hybrid Images</h4>
+      <p>
+        Inspired by classical hybrid images, I used factorized diffusion to blend prompts in frequency
+        space: low frequencies come from one prompt and high frequencies from another. The UNet is run
+        twice to get two noise estimates, which I decompose using a large Gaussian blur before recombining.
+        Up close, you perceive the high-frequency concept; from far away, the low-frequency concept dominates.
+      </p>
+      <div class="gallery gallery--two">
+        <figure class="thumb">
+          <img src="./media/1.9_ballerina_volcano.png" alt="Hybrid of ballerina and volcano">
+          <figcaption>Hybrid of a ballet dancer (high frequencies) and a volcano (low frequencies).</figcaption>
+        </figure>
+        <figure class="thumb">
+          <img src="./media/1.9_camera_eye_hybrid.png" alt="Hybrid of camera and eye">
+          <figcaption>Hybrid of a camera and a close-up eye illustration.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="card" id="bells">
+      <div class="section-label">Bells &amp; Whistles</div>
+      <h3>Additional Illusions</h3>
+
+      <h4>Three Views</h4>
+      <p>
+        I extended the flip-illusion idea to three prompts simultaneously: upright, upside-down, and
+        left-right flipped. At each timestep I ran the UNet on the original, vertically flipped, and
+        horizontally flipped images with different prompts, un-flipped the corresponding noise estimates,
+        and averaged all three. The result is a single image that supports three consistent interpretations
+        depending on how you orient it.
+      </p>
+      <p class="muted">Prompts: &ldquo;a realistic vase of flowers&rdquo;, &ldquo;an oil painting of a ballet dancer&rdquo;, and &ldquo;a photo of a volcano&rdquo;.</p>
+      <figure class="thumb" style="margin-top:8px;">
+        <img src="./media/bells_3_way_illusion.png" alt="Three-way visual illusion">
+        <figcaption>Three-way illusion: different views emerge as you flip and rotate the image.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:18px;">Negatives</h4>
+      <p>
+        I also implemented a &ldquo;negative&rdquo; illusion where the model is asked to produce an image whose
+        photographic negative evokes a different prompt. This is done by running diffusion on both the
+        image and its negated version and crafting a shared noise estimate that is consistent under the
+        sign flip.
+      </p>
+      <p class="muted">Prompts: &ldquo;a black and white photo of a woman&rdquo; and &ldquo;a black and white photo of a man&rdquo;.</p>
+      <figure class="thumb" style="margin-top:8px;">
+        <img src="./media/bells_negative_tranf.png" alt="Negative illusion of man and woman">
+        <figcaption>Positive vs. negative: one image flips between a man and a woman.</figcaption>
+      </figure>
+
+      <h4 style="margin-top:18px;">Course Logo</h4>
+      <p>
+        As a final fun application, I used a two-way visual anagram to design a logo that reads differently
+        when flipped: one orientation emphasizes a playful Cal bear, while the other looks like a stylized
+        camera. This was created with the same flip-illusion sampler but tuned for clean silhouettes.
+      </p>
+      <p class="muted">Prompts: &ldquo;a cool Cal bear&rdquo; and &ldquo;a camera&rdquo;.</p>
+      <figure class="thumb" style="margin-top:8px;">
+        <img src="./media/bells_course_logo.png" alt="Course logo visual anagram">
+        <figcaption>Logo anagram: Cal bear vs. camera depending on orientation.</figcaption>
+      </figure>
+    </section>
+
+    <section class="card" id="partB">
+      <h3>Part B — Training My Own Diffusion Models</h3>
+      <p>
+        In Part B I stepped away from DeepFloyd IF and trained my own diffusion-style models from scratch on
+        MNIST. The goal was to mirror the building blocks used in powerful text-to-image models on a much
+        smaller scale and to see how each modeling choice affects the learned denoiser.
+      </p>
+      <ul>
+        <li><strong>Single-step denoiser.</strong> I began with a model that observes a noisy digit and predicts the clean digit in one shot.</li>
+        <li><strong>Time-conditioned denoising.</strong> I added timestep embeddings so the network could adapt to different noise levels.</li>
+        <li><strong>Class conditioning.</strong> I trained a classifier-guided denoiser that can steer generations toward specific digits.</li>
+        <li><strong>Flow-matching sampler.</strong> Finally, I implemented a continuous-time flow-matching model, which views denoising as learning a velocity field rather than discrete transitions.</li>
+      </ul>
+      <p>
+        Together, these experiments highlight how diffusion models gradually learn the score (or noise)
+        of the data distribution and how conditioning signals&mdash;whether time, text, or class labels&mdash;can
+        all be incorporated through essentially the same interface.
+      </p>
+    </section>
+  </main>
+
+  <footer>© <span id="year"></span> Sarah Kiefer — All Rights Reserved</footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
