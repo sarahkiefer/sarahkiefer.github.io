@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>P5 — Diffusion Models</title>
+  <title>P5 — Fun With Diffusion Models</title>
   <meta name="description" content="Visual experiments with DeepFloyd IF and diffusion: prompt embeddings, denoising, classifier-free guidance, inpainting, visual illusions, and hybrid images, plus MNIST diffusion models trained from scratch." />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
@@ -75,13 +75,13 @@
   <main class="container">
     <p class="muted" style="margin:14px 0;"><a href="/cs180/">&larr; Back to CS 180</a></p>
 
-    <h2>Project 5 — Diffusion Models</h2>
+    <h2>Project 5 — Fun With Diffusion Models</h2>
     <p class="muted">CS 180 — Introduction to Computer Vision &amp; Computational Photography</p>
 
     <section class="card" id="overview">
       <h3>Part A — The Power of Diffusion Models!</h3>
       <p>
-        In this project I explored DeepFloyd IF and diffusion end-to-end. Starting from prompt embeddings and
+        In this part of the project I explored DeepFloyd IF and diffusion end-to-end. Starting from prompt embeddings and
         the forward noising process, I worked up to denoisers driven by a large UNet, classifier-free guidance,
         image-to-image translation, inpainting, and even illusion-style generations such as visual anagrams and
         hybrid images. All experiments in this section were generated with a fixed random seed of <code>17</code>
@@ -99,7 +99,7 @@
       </p>
 
       <h4>Prompt: &ldquo;a photo of dinosaurs climbing the Berkeley campanile&rdquo;</h4>
-      <p class="muted">[notes about composition, how the campanile and dinosaurs emerge as steps increase]</p>
+      <p class="muted">The campanile initially does not look accurate, but becomes more recognizable as steps increase.</p>
       <div class="gallery">
         <figure class="thumb">
           <img src="./media/campanile_dinos_1.png" alt="Dinosaurs on the Campanile — 20 steps">
@@ -110,13 +110,13 @@
           <figcaption>40 steps.</figcaption>
         </figure>
         <figure class="thumb">
-          <img src="./media/campanile_dinos_3_80_steps.png" alt="Dinosaurs on the Campanile — 80 steps">
+          <img src="./media/campanile_dinos_3_80 steps.png" alt="Dinosaurs on the Campanile — 80 steps">
           <figcaption>80 steps.</figcaption>
         </figure>
       </div>
 
       <h4 style="margin-top:18px;">Prompt: &ldquo;a photo of a dog surfing&rdquo;</h4>
-      <p class="muted">[notes on how the dog, surfboard, and water stabilize as we allow more diffusion steps]</p>
+      <p class="muted">The dog, surfboard, and water stabilize quite quickly with all 3 images being accurate and consistent.</p>
       <div class="gallery">
         <figure class="thumb">
           <img src="./media/dog_surfing_1.png" alt="Dog surfing — 20 steps">
@@ -133,7 +133,7 @@
       </div>
 
       <h4 style="margin-top:18px;">Prompt: &ldquo;a tiger drinking tea with the queen&rdquo;</h4>
-      <p class="muted">[notes on how the model hallucinates royal tea party details at higher steps]</p>
+      <p class="muted">Weirdly this image was most accurate at its fewest steps and then seemed to get worse with the additional steps.</p>
       <div class="gallery">
         <figure class="thumb">
           <img src="./media/queen_tiger_1.png" alt="Tiger drinking tea with the queen — 20 steps">
@@ -222,7 +222,7 @@
       </p>
       <figure class="thumb" style="margin-top:10px;">
         <img src="./media/1.4_iterative_denoising_comps.png" alt="Iterative denoising progression">
-        <figcaption>Iterative denoising from \(t=990\) downwards (every few steps) with the final estimate.</figcaption>
+        <figcaption>Iterative denoising</figcaption>
       </figure>
 
       <h4 style="margin-top:18px;">1.5 Diffusion Model Sampling</h4>
@@ -395,11 +395,11 @@
       <div class="gallery gallery--two">
         <figure class="thumb">
           <img src="./media/1.8_ballerina_house.png" alt="Ballerina and house visual anagram">
-          <figcaption>Upright: an oil painting of a ballerina. Upside down: a cozy house.</figcaption>
+          <figcaption>Upright: a cozy house. Upside down: an oil painting of a ballerina.</figcaption>
         </figure>
         <figure class="thumb">
           <img src="./media/1.8_volcano_flowers.png" alt="Volcano and vase of flowers visual anagram">
-          <figcaption>Upright: a volcano eruption. Flipped: a vase of flowers.</figcaption>
+          <figcaption>Upright: a vase of flowers  Flipped: a volcano eruption.</figcaption>
         </figure>
       </div>
 
@@ -413,11 +413,11 @@
       <div class="gallery gallery--two">
         <figure class="thumb">
           <img src="./media/1.9_ballerina_volcano.png" alt="Hybrid of ballerina and volcano">
-          <figcaption>Hybrid of a ballet dancer (high frequencies) and a volcano (low frequencies).</figcaption>
+          <figcaption>Hybrid of a ballet dancer (low frequencies) and a volcano (high frequencies).</figcaption>
         </figure>
         <figure class="thumb">
           <img src="./media/1.9_camera_eye_hybrid.png" alt="Hybrid of camera and eye">
-          <figcaption>Hybrid of a camera and a close-up eye illustration.</figcaption>
+          <figcaption>Hybrid of someone taking a picture with a camera and a close-up eye.</figcaption>
         </figure>
       </div>
     </section>
@@ -625,7 +625,7 @@
         image should change at each time \(t \in [0, 1]\).
       </p>
 
-      <h5 style="margin-top:14px;">2.1 Time Conditioning</h5>
+      <h4 style="margin-top:14px;">2.1 Time Conditioning</h4>
       <p>
         To let the UNet know <em>where</em> it is along the flow, I added time conditioning. Each scalar
         timestep \(t\) is encoded with a small MLP into a time embedding, and this embedding is injected into
@@ -637,7 +637,7 @@
         <figcaption>Time-conditioned UNet with FCBlocks injecting the timestep into multiple layers.</figcaption>
       </figure>
 
-      <h5 style="margin-top:18px;">2.2 Training the UNet</h5>
+      <h4 style="margin-top:18px;">2.2 Training the UNet</h4>
       <p>
         For flow matching, we train the network to approximate an ideal velocity field that moves samples from
         a simple distribution to the data. A common setup is:
@@ -668,7 +668,7 @@
         <figcaption>Flow-matching UNet training loss over 10 epochs.</figcaption>
       </figure>
 
-      <h5 style="margin-top:18px;">2.3 Sampling from the UNet</h5>
+      <h4 style="margin-top:18px;">2.3 Sampling from the UNet</h4>
       <p>
         Once the flow-matching UNet is trained, we can generate digits by integrating the learned velocity
         field from time 0 to time 1. Sampling works as follows:
@@ -700,7 +700,7 @@
         </figure>
       </div>
 
-      <h5 style="margin-top:22px;">2.4 Adding Class-Conditioning to the UNet</h5>
+      <h4 style="margin-top:22px;">2.4 Adding Class-Conditioning to the UNet</h4>
       <p>
         Next, I added class conditioning so that the flow can be steered to produce specific digits on demand.
         Each MNIST label \(y \in \{0, \dots, 9\}\) is embedded into a learned vector and injected into the UNet
@@ -714,7 +714,7 @@
         simpler label space.
       </p>
 
-      <h5 style="margin-top:18px;">2.5 Training the Class-Conditional UNet</h5>
+      <h4 style="margin-top:18px;">2.5 Training the Class-Conditional UNet</h4>
       <p>
         The training objective mirrors the unconditional flow matching loss, but now everything is conditioned
         on the class label:
@@ -742,7 +742,7 @@
         <figcaption>Class-conditioned flow-matching training loss over 10 epochs.</figcaption>
       </figure>
 
-      <h5 style="margin-top:18px;">2.6 Sampling from the Class-Conditional UNet</h5>
+      <h4 style="margin-top:18px;">2.6 Sampling from the Class-Conditional UNet</h4>
       <p>
         Sampling now works just like in the unconditional case, but we fix a label \(y\) and keep it
         constant throughout the integration:
@@ -779,7 +779,7 @@
         class at a time, which improves both quality and controllability.
       </p>
 
-      <h5 style="margin-top:22px;">2.6 (No Scheduler Variant)</h5>
+      <h5 style="margin-top:22px;">2.6 No Scheduler</h5>
       <p>
         In the default setup, sampling uses a scheduler: a predefined sequence of timesteps \(t_0, t_1, \ldots, t_K\)
         that determines how we march from 0 to 1. As a final experiment, I removed the scheduler and instead
