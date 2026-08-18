@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sarah Kiefer — Home</title>
-  <meta name="description" content="Under Construction: Personal site for Sarah Kiefer with a dedicated CS 280A projects section." />
+  <title>Sarah Kiefer</title>
+  <meta name="description" content="Sarah Kiefer — M.S. in Computer Science, UC Berkeley. Building AI tools that help teachers support students at scale." />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <h1>Sarah Kiefer</h1>
+      <h1><a href="/">Sarah Kiefer</a></h1>
       <nav aria-label="Primary">
         <div class="hamburger" aria-label="Toggle navigation" role="button" tabindex="0">
           <span></span><span></span><span></span>
@@ -19,54 +19,86 @@
         <ul>
           <li><a href="/" data-nav="home">Home</a></li>
           <li><a href="/about.html" data-nav="about">About</a></li>
-          <li><a href="/cs280a/" data-nav="cs280a">CS 280A Projects</a></li>
+          <li><a href="/research.html" data-nav="research">Research</a></li>
+          <li><a href="/cv.html" data-nav="cv">CV</a></li>
+          <li><a href="/cs280a/" data-nav="cs280a">Projects</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
   <main>
-    <h2>Welcome</h2>
+    <section class="hero hero--split">
+      <img class="hero-photo" src="/assets/headshot.jpg" alt="Sarah Kiefer" width="700" height="1050" />
+      <div>
+        <h2>Sarah Kiefer</h2>
+        <p class="tagline">
+          M.S. in Computer Science, UC Berkeley. I build AI tools that support — rather than
+          replace — the human parts of teaching.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/research.html">Research</a>
+          <a class="btn" href="/cv.html">CV</a>
+          <a class="btn" href="mailto:sarahrkiefer@gmail.com">Email</a>
+          <a class="btn" href="https://www.linkedin.com/in/sarahrkiefer/">LinkedIn</a>
+          <a class="btn" href="https://github.com/sarahkiefer">GitHub</a>
+        </div>
+      </div>
+    </section>
+
     <p>
-      This is my personal site. Learn more on the
-      <a href="/about.html">About</a> page, or explore my
-      <a href="/cs280a/">CS 280A projects</a>.
+      That interest came from five years on course staff for Data 8 and CS/Data 100 at
+      Berkeley, working from uGSI up to Lead TA, Head TA, and Lecturer — long enough to see
+      exactly where a course of 1,200 students strains.
     </p>
 
-    <h2>Featured Projects</h2>
-    <div class="projects">
-      <div class="card">
-        <h3>Project 0</h3>
-        <p>Overview of Project 0. <a href="/cs280a/0/">View →</a></p>
-      </div>
-      <div class="card">
-        <h3>Project 1</h3>
-        <p>Overview of Project 1. <a href="/cs280a/1/">View →</a></p>
-      </div>
-      <div class="card">
-        <h3>Project 2</h3>
-        <p>Fun with Frequencies &amp; Multiresolution Blending. <a href="/cs280a/2/">View →</a></p>
-      </div>
-      <div class="card">
-        <h3>Project 3</h3>
-        <p>(Auto)stitching &amp; Photo Mosaics. <a href="/cs280a/3/">View →</a></p>
-      </div>
-      <div class="card">
-        <h3>Project 4</h3>
-        <p>Neural Radiance Fields (NeRF). <a href="/cs280a/4/">View →</a></p>
-      </div>
-      <div class="card">
-        <h3>Project 5</h3>
-        <p>Fun With Diffusion Models. <a href="/cs280a/5/">View →</a></p>
+    <div class="callout">
+      <p class="eyebrow">Master's Thesis</p>
+      <h3>MilOH: Supporting Teaching Assistants with Retrieval-Augmented Guidance in Office Hours</h3>
+      <p class="meta">
+        M.S. Computer Science &middot; UC Berkeley EECS &middot; UCB/EECS-2026-190 &middot; May 2026<br />
+        Advised by <strong>Joshua Hug</strong> and <strong>Narges Norouzi</strong>
+      </p>
+      <p>
+        MilOH is a retrieval-augmented tool that assists TAs during office hours, combining
+        student ticket data with course materials, Q&amp;A histories, and student code from
+        JupyterHub. A month-long pilot in Data 100 found it most valuable for orienting staff
+        to unfamiliar tickets and surfacing relevant course materials.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn--primary" href="/research.html">Read the abstract</a>
+        <a class="btn" href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2026/EECS-2026-190.pdf">PDF</a>
+        <a class="btn" href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2026/EECS-2026-190.html">Tech report</a>
       </div>
     </div>
+
+    <section class="section">
+      <h2>Selected Work</h2>
+      <div class="projects">
+        <a class="card" href="/cs280a/">
+          <h3>CS 280A — Computer Vision</h3>
+          <p class="muted">Six project write-ups: image alignment, blending, mosaics, NeRF, and diffusion models.</p>
+        </a>
+        <a class="card" href="/research.html#strang-lab">
+          <h3>Competitive Network Inference</h3>
+          <p class="muted">A hypothesis-testing framework for competitive network null models, in the Strang Lab.</p>
+        </a>
+        <a class="card" href="https://github.com/sarahrkiefer/Jay-Zam">
+          <h3>Jay-Zam</h3>
+          <p class="muted">A Shazam-style audio classifier built on FFT spectrograms and a CNN.</p>
+        </a>
+        <a class="card" href="/research.html#interpretability">
+          <h3>Interpretability Survey</h3>
+          <p class="muted">A synthesis of 25+ papers on making machine learning models legible to the people using them.</p>
+        </a>
+      </div>
+    </section>
   </main>
 
   <footer>
-    © <span id="year"></span> Sarah Kiefer — All Rights Reserved
+    &copy; <span id="year"></span> Sarah Kiefer
   </footer>
 
   <script src="/script.js" defer></script>
 </body>
 </html>
-
