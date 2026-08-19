@@ -145,11 +145,8 @@ a{color:inherit}
 .prose a:hover{text-decoration-thickness:1.5px}
 .prose p:last-child{margin-bottom:0}
 
-/* An obvious, easy-to-find slot for hand-written copy */
-.bio-slot{
-  border-left:2px solid var(--rule);
-  padding-left:1.25rem;
-}
+/* Opening bio, set slightly larger than body copy */
+.bio{font-size:1.09rem; margin-bottom:.5rem}
 
 /* ---------- Featured thesis ---------- */
 .feature{
