@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CS 280A — Projects</title>
-  <meta name="description" content="Overview of CS 280A (Computer Vision) projects by Sarah Kiefer." />
+  <meta name="description" content="CS 280A (Computer Vision) project write-ups by Sarah Kiefer: camera geometry, colorization, blending, mosaics, NeRF, and diffusion models." />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <h1>Sarah Kiefer</h1>
+      <h1><a href="/">Sarah Kiefer</a></h1>
       <nav aria-label="Primary">
         <div class="hamburger" aria-label="Toggle navigation" role="button" tabindex="0">
           <span></span><span></span><span></span>
@@ -19,75 +19,58 @@
         <ul>
           <li><a href="/" data-nav="home">Home</a></li>
           <li><a href="/about.html" data-nav="about">About</a></li>
-          <li><a href="/cs280a/" data-nav="cs280a">CS 280A Projects</a></li>
+          <li><a href="/research.html" data-nav="research">Research</a></li>
+          <li><a href="/cv.html" data-nav="cv">CV</a></li>
+          <li><a href="/cs280a/" data-nav="cs280a">Projects</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="container">
-    <section class="hero" style="display:grid; grid-template-columns:1.2fr 1fr; gap:24px; padding:28px 0;">
-      <div>
-        <h2>CS 280A — Computer Vision</h2>
-        <p class="muted">Project hub for course work. Each project has its own subpage with write-up, figures, and media.</p>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <a class="btn" href="/">← Home</a>
-          <a class="btn" href="/about.html">About</a>
-        </div>
-      </div>
-      <div class="card">
-        <h3 style="margin:8px 0 6px;">Directory</h3>
-        <ul class="muted" style="margin:0 0 0 18px;">
-          <li><a href="/cs280a/0/">Project 0 — Becoming Friends with Your Camera </a></li>
-          <li><a href="/cs280a/1/">P1 — </a></li>
-          <li><a href="/cs280a/2/">P2 — </a></li>
-          <li><a href="/cs280a/3/">P3 — </a></li>
-          <li><a href="/cs280a/4/">P4 — </a></li>
-          <li><a href="/cs280a/5/">P5 — </a></li>
-        </ul>
-        <p class="muted" style="margin:10px 0 0;">
-          Create folders <code>/cs280a/0/</code> … <code>/cs280a/5/</code>, each with its own
-          <code>index.html</code> and a <code>media/</code> subfolder as needed.
-        </p>
-      </div>
+  <main class="container" style="padding-top:2rem; padding-bottom:1rem">
+    <section class="hero">
+      <h2>CS 280A — Computer Vision</h2>
+      <p class="tagline">
+        Six project write-ups from Berkeley's graduate computer vision course, each with its own
+        page of methods, figures, and results.
+      </p>
     </section>
 
-    <section class="section">
-      <h2 style="margin:0 0 10px">Projects</h2>
+    <section class="section" style="margin-top:0">
+      <h2>Projects</h2>
       <div class="projects">
         <a class="card" href="/cs280a/0/">
           <h3>Project 0 — Becoming Friends with Your Camera</h3>
-          <p class="muted">Perspective, Dolly Zoom, Depth</p>
+          <p class="muted">Perspective, dolly zoom, and depth</p>
         </a>
         <a class="card" href="/cs280a/1/">
-          <h3>P1 — To Come</h3>
-          <p class="muted">to come</p>
+          <h3>Project 1 — Colorizing the Prokudin-Gorskii Collection</h3>
+          <p class="muted">Channel alignment and image pyramids</p>
         </a>
         <a class="card" href="/cs280a/2/">
-          <h3>P2 — To Come</h3>
-          <p class="muted">to come</p>
+          <h3>Project 2 — Fun with Frequencies &amp; Multiresolution Blending</h3>
+          <p class="muted">Sharpening, hybrid images, and Laplacian blending</p>
         </a>
         <a class="card" href="/cs280a/3/">
-          <h3>P3 — To Come</h3>
-          <p class="muted">to come</p>
+          <h3>Project 3 — Panoramic Image Stitching</h3>
+          <p class="muted">Homographies, rectification, and automatic feature matching</p>
         </a>
         <a class="card" href="/cs280a/4/">
-          <h3>P4 — To Come</h3>
-          <p class="muted">to come</p>
+          <h3>Project 4 — Neural Radiance Fields (NeRF)</h3>
+          <p class="muted">Neural fields in 2D and 3D, with volume rendering</p>
         </a>
         <a class="card" href="/cs280a/5/">
-          <h3>P5 — To Come</h3>
-          <p class="muted">to come</p>
+          <h3>Project 5 — Fun With Diffusion Models</h3>
+          <p class="muted">Sampling loops, inpainting, and diffusion from scratch</p>
         </a>
       </div>
     </section>
   </main>
 
   <footer>
-    © <span id="year"></span> Sarah Kiefer — All Rights Reserved
+    &copy; <span id="year"></span> Sarah Kiefer
   </footer>
 
   <script src="/script.js" defer></script>
 </body>
 </html>
-
