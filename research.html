@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Research — Sarah Kiefer</title>
-  <meta name="description" content="Master's thesis (MilOH) and research by Sarah Kiefer: AI for education, network inference, and machine learning interpretability." />
+  <meta name="description" content="Master's thesis (MilOH) and research by Sarah Kiefer: AI for education, LLM integration and retrieval, graph network hypothesis testing, and interpretability." />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%2314487a'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='58' font-family='Georgia,serif' fill='white'%3ESK%3C/text%3E%3C/svg%3E"/>
 </head>
@@ -20,7 +20,7 @@
           <li><a href="/">Home</a></li>
           <li><a href="/research.html" aria-current="page">Research</a></li>
           <li><a href="/cv.html">CV</a></li>
-          <li><a href="/cs280a/">Projects</a></li>
+          <li><a href="/projects.html">Projects</a></li>
         </ul>
       </nav>
     </div>
@@ -28,10 +28,18 @@
 
   <main class="page">
     <h1 class="page-title">Research</h1>
-    <p class="subtitle">
-      AI for education, statistical inference on networks, and making machine
-      learning models legible to the people who rely on them.
-    </p>
+
+    <div class="prose" style="margin-top:1.25rem">
+      <p>
+        <strong>In general:</strong> AI for Education, LLM Integration &amp; Retrieval, Graph
+        Network Hypothesis Testing, Interpretability, Sarcasm-Detection, CV &amp; Audio
+        Classification
+      </p>
+      <p>
+        <strong>In spirit:</strong> I like solving hard problems that make a difference for
+        real humans
+      </p>
+    </div>
 
     <section class="section" id="thesis">
       <h2>Master's Thesis</h2>
@@ -44,8 +52,6 @@
       <dl class="kv">
         <dt>Advisors</dt>
         <dd>Joshua Hug (advisor) and Narges Norouzi (editor)</dd>
-        <dt>Report</dt>
-        <dd>UCB/EECS-2026-190</dd>
         <dt>Filed</dt>
         <dd>May 15, 2026</dd>
       </dl>
@@ -58,27 +64,43 @@
       <p class="label" style="margin-top:2.25rem">Abstract</p>
       <div class="abstract">
         <p>
-          Office hours serve as vital instructional settings in large data science courses. In an
-          environment where students access general-purpose language models for debugging and
-          explanations, office hours' true value emerges from human instruction that diagnoses
-          confusion, tailors explanations, demonstrates expert reasoning, and builds on student
-          comprehension.
+          Office hours are a critical instructional setting in large data science courses,
+          supporting both student learning and teaching assistant development. In an era where
+          students can turn to general-purpose LLMs for fast debugging help or surface-level
+          explanations, the value of office hours increasingly lies in what AI tools alone cannot
+          provide: responsive, human instruction from a teacher who can diagnose confusion, adapt
+          explanations, model expert thinking, and build on the student&rsquo;s current
+          understanding. At the same time, if fewer routine questions reach staff, TAs have fewer
+          opportunities to observe student difficulties, develop course-specific expertise, and
+          pass down institutional knowledge across semesters.
         </p>
         <p>
-          MilOH functions as a retrieval-augmented tool assisting TAs during office-hour sessions.
-          It combines student ticket data with course materials, Q&amp;A histories, and student code
-          from JupyterHub. The system provides concise guidance helping staff identify potential
-          issues, relevant topics, and instructional directions. Rather than supplanting the TA,
-          MilOH minimizes time spent on routine debugging and information gathering, enabling focus
-          on diagnostic questioning, targeted instruction, problem-solving modeling, and deeper
-          understanding development.
+          We introduce MilOH, a retrieval-augmented AI tool that supports TAs during real-time
+          office-hours interactions. MilOH integrates student ticket information with multiple
+          forms of course context, including course materials, prior Q&amp;A resources, and student
+          code retrieved from the course JupyterHub environment. The system generates concise
+          TA-facing guidance that helps staff identify likely issues, relevant concepts, and
+          possible next steps before or during a student interaction. Rather than replacing the TA,
+          MilOH is designed to reduce the time staff spend on mechanical debugging and context
+          gathering so they can focus on the core instructional work of office hours: asking
+          diagnostic questions, giving targeted explanations, modeling problem-solving, and helping
+          students develop deeper understanding.
         </p>
         <p>
-          A month-long pilot in Data 100 demonstrated that TAs found MilOH particularly valuable
-          when orienting to unfamiliar tickets and surfacing relevant course materials. The approach
-          represents a human-centered strategy for educational AI support, combining material
-          retrieval with live code context to maintain office hours' instructional distinctiveness
-          while enhancing support scalability and consistency in large data science courses.
+          We evaluate MilOH through a month-long pilot study in Data 100, a large upper-division
+          data science course. Course staff used MilOH in office hours and provided feedback on how
+          the tool shaped their preparation and teaching. Staff found MilOH most useful when it
+          helped them quickly orient to unfamiliar tickets, surface relevant course context, and
+          generate starting points for student conversations. Rather than replacing TA judgment,
+          MilOH helped the TA enter the interaction with a sharper sense of the student&rsquo;s
+          problem and a clearer path toward helping them.
+        </p>
+        <p>
+          This work presents MilOH as a human-centered approach to AI-supported teaching
+          infrastructure. By combining course-material retrieval with live student-code context,
+          MilOH helps preserve the distinctive value of office hours as a space for exceptional
+          instruction, while improving the scalability and consistency of support in large data
+          science courses.
         </p>
       </div>
 
@@ -103,22 +125,24 @@
         <li class="entry" id="strang-lab">
           <div class="entry-when">May 2024 &ndash; May 2025</div>
           <div class="entry-what">
-            <h3>Hypothesis Testing for Competitive Networks</h3>
+            <h3>Competition Networks</h3>
             <p class="entry-where">Strang Lab, UC Berkeley &middot; Research Apprentice</p>
             <ul>
               <li>
-                Built and validated a hypothesis-testing framework for the competitive network null
-                model — a covariance structure shared by many abstract flow networks, from financial
-                transactions to air traffic to social interaction.
+                Building a hypothesis testing framework for the competitive network null model,
+                which has a very specific covariance structure that is shared by many abstract flow
+                networks like financial transactions, information flows in sensor data, air traffic
+                flows, and social interaction networks.
               </li>
               <li>
-                Graph theory and subgraph extraction, test design, Bonferroni correction, uniformly
-                most powerful tests, and bootstrapping; improved code efficiency ~50% by uniting
-                components under a distributed systems framework.
+                Since the null model is so broadly applicable but still has this very specific
+                covariance structure, being able to decide if a network fits that description could
+                speed up computation significantly and offer network insights.
               </li>
               <li>
-                Reframed the null model's covariance as something synthesizable from Kronecker
-                products of subgraphs while preserving index labeling.
+                Graph theory, subgraph extraction algorithms, test design, Bonferroni correction,
+                uniformly most powerful tests, bootstrapping, and pandas + matplotlib visualizations
+                of test performance across many different metrics.
               </li>
               <li>
                 <a href="https://epubs.siam.org/doi/abs/10.1137/20M1321012">Related work (SIAM)</a>
@@ -129,12 +153,13 @@
         <li class="entry">
           <div class="entry-when">2024 &ndash; 2025</div>
           <div class="entry-what">
-            <h3>Reading Group: Fast Multipole Method vs. Vecchia Transform</h3>
+            <h3>Reading Group: Fast-Multipole Method vs. Vecchia Transform</h3>
             <p class="entry-where">Strang Lab, UC Berkeley</p>
             <ul>
               <li>
-                Led discussions comparing two approaches to numerical optimization of O(N&sup2;)
-                Gaussian process covariance computation, well outside my home domain.
+                Focused on optimization of Gaussian process covariance matrix computation —
+                specifically numerical optimization of O(N&sup2;) Gaussian process covariance
+                computation. Led discussions on the Fast-Multipole Method vs. the Vecchia transform.
               </li>
             </ul>
           </div>
@@ -142,17 +167,20 @@
         <li class="entry" id="econ-bias">
           <div class="entry-when">Sept 2022 &ndash; Jan 2023</div>
           <div class="entry-what">
-            <h3>Demographic Bias in Economics Publishing</h3>
+            <h3>Gender Bias in Economic Journals</h3>
             <p class="entry-where">For Prof. David Romer, UC Berkeley</p>
             <ul>
               <li>
-                Investigated bias in the <em>Journal of Economic Literature</em> ahead of Prof. Romer
-                becoming its editor: data collection, EDA, A/B testing, and difference-in-differences.
+                Investigated the biases of the <em>Journal of Economic Literature</em> for Prof.
+                David Romer, who was becoming the editor of that journal; involved data collection
+                and cleaning, EDA, A/B testing, and prediction methods.
               </li>
               <li>
-                Required majority female authorship rather than the weaker "at least one female
-                author" metric; built 15 visualizations. Findings informed changes implemented at
-                the journal.
+                Probed beyond &ldquo;is there at least one female author&rdquo; and required
+                majority female authorship to give real statistics and eliminate bias of the metric.
+                Created 15 different visualizations to aid in understanding the different faces of
+                bias faced by that particular journal; he ended up implementing changes in the areas
+                I laid out.
               </li>
             </ul>
           </div>
@@ -162,16 +190,36 @@
 
     <section class="section">
       <h2>Projects</h2>
+      <p class="subtitle" style="margin-bottom:1.4rem">
+        More on the <a href="/projects.html" style="color:var(--accent)">projects page</a>.
+      </p>
       <ul class="entries">
+        <li class="entry">
+          <div class="entry-when">Fall 2025</div>
+          <div class="entry-what">
+            <h3><a href="/projects.html#computer-vision">Computer Vision</a></h3>
+            <ul>
+              <li>
+                Colorizing the Prokudin-Gorskii collection, frequency analysis and multiresolution
+                blending, panoramic stitching, neural radiance fields, and diffusion models.
+              </li>
+            </ul>
+          </div>
+        </li>
         <li class="entry" id="interpretability">
           <div class="entry-when">Apr &ndash; May 2024</div>
           <div class="entry-what">
-            <h3><a href="https://drive.google.com/file/d/1d5ekXoQgu_TgtSWOVnH4iBGTQ-bVObzZ/view">Analytical Survey on Interpretability in Machine Learning</a></h3>
-            <p class="entry-where">Python, NLP</p>
+            <h3><a href="https://drive.google.com/file/d/1d5ekXoQgu_TgtSWOVnH4iBGTQ-bVObzZ/view">Survey of Literature on Interpretability in Machine Learning</a></h3>
             <ul>
               <li>
-                A synthesis of 25+ influential papers, written after building a sarcasm-detection
-                model and finding I could not explain what it was keying on.
+                A survey detailing 25+ papers in the sphere of interpretability, especially for
+                human contexts.
+              </li>
+              <li>
+                It spawned from curiosity about how we actually observe what a model is using to
+                make its decisions. Knowing <em>why</em> the model comes up with what it does is
+                important — an area that definitely deserves more investigation in an AI education
+                setting.
               </li>
             </ul>
           </div>
@@ -179,21 +227,15 @@
         <li class="entry" id="sarcasm">
           <div class="entry-when">2024</div>
           <div class="entry-what">
-            <h3><a href="https://drive.google.com/file/d/1b3pjF4x_4D8LfCfuHB_rhnVZqt4oGKfk/view">Sarcasm Detection: The Onion vs. Real Headlines</a></h3>
-            <ul>
-              <li>Logistic regression compared against a fine-tuned BERT model for classifying satirical headlines.</li>
-            </ul>
-          </div>
-        </li>
-        <li class="entry" id="jayzam">
-          <div class="entry-when">Jan &ndash; May 2023</div>
-          <div class="entry-what">
-            <h3><a href="https://github.com/sarahrkiefer/Jay-Zam">Jay-Zam</a></h3>
-            <p class="entry-where">Flask, PyTorch, HTML/CSS/JS</p>
+            <h3><a href="https://drive.google.com/file/d/1b3pjF4x_4D8LfCfuHB_rhnVZqt4oGKfk/view">LLM Sarcasm Detection: The Onion vs. Real News Headlines</a></h3>
             <ul>
               <li>
-                A Shazam-style web app identifying Jay-Z songs by classifying FFT spectrogram images
-                with a CNN and random forests, at 95% accuracy.
+                We used both a logistic regression model and fine-tuned BERT to determine if a news
+                title is sarcastic or not; findings are reported in the linked document.
+              </li>
+              <li>
+                First practice with how to take these complicated human features of language and
+                find a way to expand them to technical models.
               </li>
             </ul>
           </div>
@@ -205,22 +247,37 @@
             <p class="entry-where">European Innovation Academy, Porto &middot; $25k grand prize</p>
             <ul>
               <li>
-                A medication management system letting family members track a loved one's doses from
-                a distance: a Figma prototype of the companion app plus a working wifi-connected
-                dispenser fabricated with AutoCAD at a local FabLab.
+                My team of five won the start-up competition&rsquo;s biggest prize, sponsored by
+                patent law firm Nixon Peabody, with our integrated medication management system
+                called Pillminder.
               </li>
-              <li>Continues as a computer vision problem — verifying the dispensed medication is correct.</li>
+              <li>
+                Our product was designed to make medication management easier for loved ones to keep
+                track of from afar. We developed a seamless Figma mock-up of what the app would look
+                like for family members, and built a working prototype of the wifi-connected pill
+                dispenser.
+              </li>
+              <li>
+                This spawned an ongoing project that looks to build a computer vision algorithm to
+                check that the medication being dispensed is the correct medication.
+              </li>
             </ul>
           </div>
         </li>
-        <li class="entry">
-          <div class="entry-when">2024</div>
+        <li class="entry" id="jayzam">
+          <div class="entry-when">Jan &ndash; May 2023</div>
           <div class="entry-what">
-            <h3><a href="/cs280a/">CS 280A — Computer Vision</a></h3>
+            <h3><a href="https://github.com/sarahrkiefer/Jay-Zam">Jay-Zam</a></h3>
+            <p class="entry-where">Audio classification &middot; Flask, PyTorch, HTML/CSS/JS</p>
             <ul>
               <li>
-                Six write-ups: camera geometry, Prokudin-Gorskii colorization, frequency analysis and
-                multiresolution blending, panoramic stitching, neural radiance fields, and diffusion models.
+                This personal project was just to build a Shazam-like front-end and a CNN-based
+                model to classify which Jay-Z song was playing. (I only had so much storage for the
+                songs, so I picked Jay-Z.)
+              </li>
+              <li>
+                It came from wondering what implementing some of this from scratch would look like —
+                a sandbox approach to the ideas behind Data 100 and CS 189.
               </li>
             </ul>
           </div>

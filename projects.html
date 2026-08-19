@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Projects — Sarah Kiefer</title>
+  <meta name="description" content="Projects by Sarah Kiefer — audio classification, medication management hardware, interpretability, sarcasm detection, and computer vision." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%2314487a'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='58' font-family='Georgia,serif' fill='white'%3ESK%3C/text%3E%3C/svg%3E"/>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-brand" href="/">Sarah Kiefer</a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="site-nav" aria-label="Primary">
+        <ul id="site-menu">
+          <li><a href="/">Home</a></li>
+          <li><a href="/research.html">Research</a></li>
+          <li><a href="/cv.html">CV</a></li>
+          <li><a href="/projects.html" aria-current="page">Projects</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page page--wide">
+    <h1 class="page-title">Projects</h1>
+    <p class="subtitle">
+      Things I built to answer a question I had — about sound, about medication, about
+      what a model is actually doing.
+    </p>
+
+    <section class="section" id="selected">
+      <h2>Selected</h2>
+      <ul class="cards">
+        <li>
+          <a class="pcard pcard--text" href="https://github.com/sarahrkiefer/Jay-Zam">
+            <div class="pcard-body">
+              <p class="pcard-index">Jan &ndash; May 2023</p>
+              <h3>Jay-Zam</h3>
+              <p>
+                A Shazam-like front-end and a CNN-based model to classify which Jay-Z song is
+                playing. I only had so much storage for the songs, so I picked Jay-Z.
+              </p>
+              <ul class="pcard-tags"><li>CNN</li><li>FFT spectrograms</li><li>Flask</li><li>PyTorch</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard pcard--text" href="/research.html#pillminder">
+            <div class="pcard-body">
+              <p class="pcard-index">Summer 2023 &middot; $25k grand prize</p>
+              <h3>Pillminder</h3>
+              <p>
+                An integrated medication management system, designed to make medication easier for
+                loved ones to keep track of from afar — a Figma mock-up of the family app plus a
+                working wifi-connected pill dispenser.
+              </p>
+              <ul class="pcard-tags"><li>hardware</li><li>Figma</li><li>AutoCAD</li><li>computer vision</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard pcard--text" href="https://drive.google.com/file/d/1d5ekXoQgu_TgtSWOVnH4iBGTQ-bVObzZ/view">
+            <div class="pcard-body">
+              <p class="pcard-index">Apr &ndash; May 2024</p>
+              <h3>Interpretability Survey</h3>
+              <p>
+                A survey detailing 25+ papers in the sphere of interpretability, especially for
+                human contexts. Knowing <em>why</em> a model comes up with what it does matters.
+              </p>
+              <ul class="pcard-tags"><li>interpretability</li><li>NLP</li><li>survey</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard pcard--text" href="https://drive.google.com/file/d/1b3pjF4x_4D8LfCfuHB_rhnVZqt4oGKfk/view">
+            <div class="pcard-body">
+              <p class="pcard-index">2024</p>
+              <h3>LLM Sarcasm Detection</h3>
+              <p>
+                Logistic regression and a fine-tuned BERT, used to determine whether a news headline
+                is sarcastic — The Onion against the real thing.
+              </p>
+              <ul class="pcard-tags"><li>BERT</li><li>logistic regression</li><li>NLP</li></ul>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="section" id="computer-vision">
+      <h2>Computer Vision</h2>
+      <p class="subtitle" style="margin:-0.75rem 0 1.6rem">
+        Fall 2025. Each has its own write-up with methods, figures, and results.
+      </p>
+      <ul class="cards">
+        <li>
+          <a class="pcard" href="/cs280a/1/">
+            <figure class="pcard-figure"><img src="/assets/thumbs/p1.jpg" alt="" loading="lazy" width="640" height="427" /></figure>
+            <div class="pcard-body">
+              <h3>Colorizing the Prokudin-Gorskii Collection</h3>
+              <p>Aligning century-old glass-plate exposures into color with pyramid search and NCC scoring.</p>
+              <ul class="pcard-tags"><li>alignment</li><li>image pyramids</li><li>NCC</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard" href="/cs280a/2/">
+            <figure class="pcard-figure"><img src="/assets/thumbs/p2.jpg" alt="" loading="lazy" width="640" height="427" /></figure>
+            <div class="pcard-body">
+              <h3>Frequencies &amp; Multiresolution Blending</h3>
+              <p>Sharpening, hybrid images that change with viewing distance, and Laplacian-pyramid blending.</p>
+              <ul class="pcard-tags"><li>filtering</li><li>hybrid images</li><li>Laplacian</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard" href="/cs280a/3/">
+            <figure class="pcard-figure"><img src="/assets/thumbs/p3.jpg" alt="" loading="lazy" width="640" height="427" /></figure>
+            <div class="pcard-body">
+              <h3>Panoramic Image Stitching</h3>
+              <p>Recovering homographies by hand, then automatically with Harris corners, ANMS, and RANSAC.</p>
+              <ul class="pcard-tags"><li>homographies</li><li>RANSAC</li><li>mosaics</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard" href="/cs280a/4/">
+            <figure class="pcard-figure"><img src="/assets/thumbs/p4.jpg" alt="" loading="lazy" width="640" height="427" /></figure>
+            <div class="pcard-body">
+              <h3>Neural Radiance Fields</h3>
+              <p>Fitting neural fields to images, then to a 3D scene with volume rendering along sampled rays.</p>
+              <ul class="pcard-tags"><li>NeRF</li><li>volume rendering</li><li>PSNR</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard" href="/cs280a/5/">
+            <figure class="pcard-figure"><img src="/assets/thumbs/p5.jpg" alt="" loading="lazy" width="640" height="427" /></figure>
+            <div class="pcard-body">
+              <h3>Diffusion Models</h3>
+              <p>Sampling loops, classifier-free guidance, and inpainting — then a diffusion model from scratch.</p>
+              <ul class="pcard-tags"><li>diffusion</li><li>CFG</li><li>inpainting</li></ul>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a class="pcard" href="/cs280a/0/">
+            <figure class="pcard-figure"><img src="/assets/thumbs/p0.jpg" alt="" loading="lazy" width="640" height="427" /></figure>
+            <div class="pcard-body">
+              <h3>Perspective &amp; the Dolly Zoom</h3>
+              <p>How focal length and distance reshape a face and a facade, plus a hand-shot dolly zoom.</p>
+              <ul class="pcard-tags"><li>perspective</li><li>dolly zoom</li><li>depth</li></ul>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    &copy; <span id="year"></span> Sarah Kiefer
+  </footer>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>
