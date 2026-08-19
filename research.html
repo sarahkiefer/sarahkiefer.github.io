@@ -6,63 +6,56 @@
   <title>Research — Sarah Kiefer</title>
   <meta name="description" content="Master's thesis (MilOH) and research by Sarah Kiefer: AI for education, network inference, and machine learning interpretability." />
   <link rel="stylesheet" href="/style.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%237c9cff'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='44' font-family='Arial' fill='white'%3ES%3C/text%3E%3C/svg%3E"/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%2314487a'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='58' font-family='Georgia,serif' fill='white'%3ESK%3C/text%3E%3C/svg%3E"/>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1><a href="/">Sarah Kiefer</a></h1>
-      <nav aria-label="Primary">
-        <div class="hamburger" aria-label="Toggle navigation" role="button" tabindex="0">
-          <span></span><span></span><span></span>
-        </div>
-        <ul>
-          <li><a href="/" data-nav="home">Home</a></li>
-          <li><a href="/about.html" data-nav="about">About</a></li>
-          <li><a href="/research.html" data-nav="research">Research</a></li>
-          <li><a href="/cv.html" data-nav="cv">CV</a></li>
-          <li><a href="/cs280a/" data-nav="cs280a">Projects</a></li>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-brand" href="/">Sarah Kiefer</a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="site-nav" aria-label="Primary">
+        <ul id="site-menu">
+          <li><a href="/">Home</a></li>
+          <li><a href="/research.html" aria-current="page">Research</a></li>
+          <li><a href="/cv.html">CV</a></li>
+          <li><a href="/cs280a/">Projects</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main>
-    <h2>Research</h2>
-    <p class="lead">
-      AI for education, statistical inference on networks, and making machine learning
-      models legible to the people who rely on them.
+  <main class="page">
+    <h1 class="page-title">Research</h1>
+    <p class="subtitle">
+      AI for education, statistical inference on networks, and making machine
+      learning models legible to the people who rely on them.
     </p>
 
-    <!-- ============ Master's thesis ============ -->
     <section class="section" id="thesis">
       <h2>Master's Thesis</h2>
 
-      <p class="eyebrow">M.S. Computer Science &middot; UC Berkeley</p>
-      <h3>MilOH: Supporting Teaching Assistants with Retrieval-Augmented Guidance in Office Hours</h3>
+      <p class="label">M.S. Computer Science &middot; UC Berkeley EECS</p>
+      <h3 style="font-size:1.45rem; line-height:1.3; margin-bottom:1.1rem">
+        MilOH: Supporting Teaching Assistants with Retrieval-Augmented Guidance in Office Hours
+      </h3>
 
-      <div class="card">
-        <dl class="facts">
-          <dt>Advisors</dt>
-          <dd><strong>Joshua Hug</strong> (advisor) and <strong>Narges Norouzi</strong> (editor)</dd>
+      <dl class="kv">
+        <dt>Advisors</dt>
+        <dd>Joshua Hug (advisor) and Narges Norouzi (editor)</dd>
+        <dt>Report</dt>
+        <dd>UCB/EECS-2026-190</dd>
+        <dt>Filed</dt>
+        <dd>May 15, 2026</dd>
+      </dl>
 
-          <dt>Department</dt>
-          <dd>Electrical Engineering and Computer Sciences, UC Berkeley</dd>
-
-          <dt>Report</dt>
-          <dd>UCB/EECS-2026-190</dd>
-
-          <dt>Filed</dt>
-          <dd>May 15, 2026</dd>
-        </dl>
+      <div class="actions">
+        <a class="button button--solid" href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2026/EECS-2026-190.pdf">Read the PDF</a>
+        <a class="button" href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2026/EECS-2026-190.html">Berkeley tech report</a>
       </div>
 
-      <div class="btn-row">
-        <a class="btn btn--primary" href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2026/EECS-2026-190.pdf">Read the PDF</a>
-        <a class="btn" href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2026/EECS-2026-190.html">Berkeley tech report</a>
-      </div>
-
-      <h4 style="margin-top:2rem">Abstract</h4>
+      <p class="label" style="margin-top:2.25rem">Abstract</p>
       <div class="abstract">
         <p>
           Office hours serve as vital instructional settings in large data science courses. In an
@@ -89,8 +82,8 @@
         </p>
       </div>
 
-      <details style="margin-top:1.5rem">
-        <summary class="muted">BibTeX</summary>
+      <details>
+        <summary>BibTeX</summary>
         <pre><code>@mastersthesis{Kiefer:EECS-2026-190,
     Author = {Kiefer, Sarah},
     Editor = {Hug, Joshua and Norouzi, Narges},
@@ -104,126 +97,139 @@
       </details>
     </section>
 
-    <!-- ============ Research experience ============ -->
-    <section class="section" id="research-experience">
+    <section class="section">
       <h2>Research Experience</h2>
-
-      <div class="card" id="strang-lab" style="margin-bottom:1rem">
-        <h3>Hypothesis Testing for Competitive Networks</h3>
-        <p class="meta">Strang Lab, UC Berkeley &middot; Research Apprentice &middot; May 2024 &ndash; May 2025</p>
-        <p>
-          Built and validated a hypothesis-testing framework for the competitive network null model,
-          a structure whose distinctive covariance is shared by many abstract flow networks —
-          financial transactions, sensor information flows, air traffic, and social interaction
-          among them. Because the null model is broadly applicable but tightly specified, being able
-          to decide whether a network fits it can cut computation substantially and yield structural
-          insight.
-        </p>
-        <p>
-          The work drew on graph theory and subgraph extraction, test design, Bonferroni correction,
-          uniformly most powerful tests, and bootstrapping. I improved code efficiency by roughly 50%
-          by uniting components under a distributed systems framework, and produced the pandas and
-          matplotlib visualizations used to evaluate test performance across metrics. One turn that
-          shaped how I approach problems: reframing the null model's covariance structure as
-          something synthesizable from Kronecker products of subgraphs while preserving index
-          labeling.
-        </p>
-        <p class="muted">
-          Related work:
-          <a href="https://epubs.siam.org/doi/abs/10.1137/20M1321012">Strang et al., SIAM</a>
-        </p>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem">
-        <h3>Reading Group: Fast Multipole Method vs. Vecchia Transform</h3>
-        <p class="meta">Strang Lab, UC Berkeley</p>
-        <p>
-          Led discussions comparing two approaches to the numerical optimization of O(N&sup2;)
-          Gaussian process covariance computation. Reading well outside my domain — the source
-          material leaned heavily theoretical — taught me to extract what matters from a difficult
-          paper and teach it to a room shortly after learning it myself.
-        </p>
-      </div>
-
-      <div class="card" id="econ-bias">
-        <h3>Demographic Bias in Economics Publishing</h3>
-        <p class="meta">For Prof. David Romer, UC Berkeley &middot; Sept 2022 &ndash; Jan 2023</p>
-        <p>
-          Investigated bias in the <em>Journal of Economic Literature</em> ahead of Prof. Romer
-          taking over as editor. The project spanned data collection and cleaning, exploratory
-          analysis, A/B testing, difference-in-differences, and prediction. Rather than settle for
-          the usual weak metric — whether a paper has at least one female author — I required
-          majority female authorship, which produced statistics that actually held up. I built 15
-          visualizations covering different faces of the bias; the professor implemented changes in
-          the areas the analysis identified.
-        </p>
-      </div>
+      <ul class="entries">
+        <li class="entry" id="strang-lab">
+          <div class="entry-when">May 2024 &ndash; May 2025</div>
+          <div class="entry-what">
+            <h3>Hypothesis Testing for Competitive Networks</h3>
+            <p class="entry-where">Strang Lab, UC Berkeley &middot; Research Apprentice</p>
+            <ul>
+              <li>
+                Built and validated a hypothesis-testing framework for the competitive network null
+                model — a covariance structure shared by many abstract flow networks, from financial
+                transactions to air traffic to social interaction.
+              </li>
+              <li>
+                Graph theory and subgraph extraction, test design, Bonferroni correction, uniformly
+                most powerful tests, and bootstrapping; improved code efficiency ~50% by uniting
+                components under a distributed systems framework.
+              </li>
+              <li>
+                Reframed the null model's covariance as something synthesizable from Kronecker
+                products of subgraphs while preserving index labeling.
+              </li>
+              <li>
+                <a href="https://epubs.siam.org/doi/abs/10.1137/20M1321012">Related work (SIAM)</a>
+              </li>
+            </ul>
+          </div>
+        </li>
+        <li class="entry">
+          <div class="entry-when">2024 &ndash; 2025</div>
+          <div class="entry-what">
+            <h3>Reading Group: Fast Multipole Method vs. Vecchia Transform</h3>
+            <p class="entry-where">Strang Lab, UC Berkeley</p>
+            <ul>
+              <li>
+                Led discussions comparing two approaches to numerical optimization of O(N&sup2;)
+                Gaussian process covariance computation, well outside my home domain.
+              </li>
+            </ul>
+          </div>
+        </li>
+        <li class="entry" id="econ-bias">
+          <div class="entry-when">Sept 2022 &ndash; Jan 2023</div>
+          <div class="entry-what">
+            <h3>Demographic Bias in Economics Publishing</h3>
+            <p class="entry-where">For Prof. David Romer, UC Berkeley</p>
+            <ul>
+              <li>
+                Investigated bias in the <em>Journal of Economic Literature</em> ahead of Prof. Romer
+                becoming its editor: data collection, EDA, A/B testing, and difference-in-differences.
+              </li>
+              <li>
+                Required majority female authorship rather than the weaker "at least one female
+                author" metric; built 15 visualizations. Findings informed changes implemented at
+                the journal.
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
     </section>
 
-    <!-- ============ Projects ============ -->
-    <section class="section" id="projects">
-      <h2>Selected Projects</h2>
-
-      <div class="card" id="interpretability" style="margin-bottom:1rem">
-        <h3>Analytical Survey on Interpretability in Machine Learning</h3>
-        <p class="meta">Apr &ndash; May 2024</p>
-        <p>
-          A synthesis of 25+ influential papers on interpretability, written after building a
-          sarcasm-detection model and finding I could not explain what it was keying on. The survey
-          traces the major trends and argues for concrete directions toward models that are
-          understandable as well as accurate — a prerequisite for anything deployed in an
-          educational setting.
-        </p>
-        <p class="muted"><a href="https://drive.google.com/file/d/1d5ekXoQgu_TgtSWOVnH4iBGTQ-bVObzZ/view">Read the survey</a></p>
-      </div>
-
-      <div class="card" id="sarcasm" style="margin-bottom:1rem">
-        <h3>Sarcasm Detection: The Onion vs. Real News Headlines</h3>
-        <p>
-          Classified headlines as sincere or satirical using both logistic regression and a
-          fine-tuned BERT model. A first pass at taking a slippery human feature of language and
-          making it tractable for a model — and the direct cause of the interpretability survey
-          above.
-        </p>
-        <p class="muted"><a href="https://drive.google.com/file/d/1b3pjF4x_4D8LfCfuHB_rhnVZqt4oGKfk/view">Project analysis</a></p>
-      </div>
-
-      <div class="card" id="jayzam" style="margin-bottom:1rem">
-        <h3>Jay-Zam</h3>
-        <p class="meta">Jan 2023 &ndash; May 2023 &middot; Flask, PyTorch, HTML/CSS/JS</p>
-        <p>
-          A Shazam-style web app that identifies which Jay-Z song is playing, classifying FFT
-          spectrogram images with a CNN and random forests at 95% accuracy. Built from scratch out
-          of curiosity about what implementing the machinery behind Data 100 and CS 189 would
-          actually involve.
-        </p>
-        <p class="muted"><a href="https://github.com/sarahrkiefer/Jay-Zam">Source on GitHub</a></p>
-      </div>
-
-      <div class="card" id="pillminder" style="margin-bottom:1rem">
-        <h3>Pillminder</h3>
-        <p class="meta">European Innovation Academy, Porto &middot; Summer 2023 &middot; $25k grand prize</p>
-        <p>
-          An integrated medication management system designed to let family members keep track of a
-          loved one's medication from a distance. My team of five built a Figma prototype of the
-          companion app alongside a working wifi-connected pill dispenser, fabricated at a local
-          FabLab using AutoCAD. The project continues as a computer vision problem: verifying that
-          the medication actually dispensed is the correct one.
-        </p>
-      </div>
-
-      <a class="card" href="/cs280a/">
-        <h3>CS 280A — Computer Vision</h3>
-        <p class="muted">
-          Six project write-ups covering camera geometry, Prokudin-Gorskii colorization, frequency
-          analysis and multiresolution blending, image mosaics, neural radiance fields, and
-          diffusion models.
-        </p>
-      </a>
+    <section class="section">
+      <h2>Projects</h2>
+      <ul class="entries">
+        <li class="entry" id="interpretability">
+          <div class="entry-when">Apr &ndash; May 2024</div>
+          <div class="entry-what">
+            <h3><a href="https://drive.google.com/file/d/1d5ekXoQgu_TgtSWOVnH4iBGTQ-bVObzZ/view">Analytical Survey on Interpretability in Machine Learning</a></h3>
+            <p class="entry-where">Python, NLP</p>
+            <ul>
+              <li>
+                A synthesis of 25+ influential papers, written after building a sarcasm-detection
+                model and finding I could not explain what it was keying on.
+              </li>
+            </ul>
+          </div>
+        </li>
+        <li class="entry" id="sarcasm">
+          <div class="entry-when">2024</div>
+          <div class="entry-what">
+            <h3><a href="https://drive.google.com/file/d/1b3pjF4x_4D8LfCfuHB_rhnVZqt4oGKfk/view">Sarcasm Detection: The Onion vs. Real Headlines</a></h3>
+            <ul>
+              <li>Logistic regression compared against a fine-tuned BERT model for classifying satirical headlines.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="entry" id="jayzam">
+          <div class="entry-when">Jan &ndash; May 2023</div>
+          <div class="entry-what">
+            <h3><a href="https://github.com/sarahrkiefer/Jay-Zam">Jay-Zam</a></h3>
+            <p class="entry-where">Flask, PyTorch, HTML/CSS/JS</p>
+            <ul>
+              <li>
+                A Shazam-style web app identifying Jay-Z songs by classifying FFT spectrogram images
+                with a CNN and random forests, at 95% accuracy.
+              </li>
+            </ul>
+          </div>
+        </li>
+        <li class="entry" id="pillminder">
+          <div class="entry-when">Summer 2023</div>
+          <div class="entry-what">
+            <h3>Pillminder</h3>
+            <p class="entry-where">European Innovation Academy, Porto &middot; $25k grand prize</p>
+            <ul>
+              <li>
+                A medication management system letting family members track a loved one's doses from
+                a distance: a Figma prototype of the companion app plus a working wifi-connected
+                dispenser fabricated with AutoCAD at a local FabLab.
+              </li>
+              <li>Continues as a computer vision problem — verifying the dispensed medication is correct.</li>
+            </ul>
+          </div>
+        </li>
+        <li class="entry">
+          <div class="entry-when">2024</div>
+          <div class="entry-what">
+            <h3><a href="/cs280a/">CS 280A — Computer Vision</a></h3>
+            <ul>
+              <li>
+                Six write-ups: camera geometry, Prokudin-Gorskii colorization, frequency analysis and
+                multiresolution blending, panoramic stitching, neural radiance fields, and diffusion models.
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
     </section>
   </main>
 
-  <footer>
+  <footer class="site-footer">
     &copy; <span id="year"></span> Sarah Kiefer
   </footer>
 
