@@ -121,8 +121,8 @@ a{color:inherit}
   margin-bottom:2.5rem;
 }
 .intro-photo{
-  width:132px; height:165px; object-fit:cover; object-position:50% 30%;
-  border-radius:3px; display:block;
+  width:150px; height:150px; object-fit:cover;
+  border-radius:4px; display:block;
   border:1px solid var(--rule); background:var(--surface);
 }
 .intro-affil{
@@ -176,6 +176,7 @@ a{color:inherit}
   font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
   text-decoration:none; color:var(--accent);
   background:var(--surface); border:1px solid var(--rule); border-radius:3px;
+  cursor:pointer; -webkit-appearance:none;
   transition:border-color .15s ease, background .15s ease, color .15s ease;
 }
 .button:hover{border-color:var(--accent); background:var(--accent-wash)}
@@ -207,8 +208,9 @@ a{color:inherit}
   display:grid; grid-template-columns:repeat(auto-fill, minmax(19rem, 1fr));
   gap:1.6rem; margin:0; padding:0; list-style:none;
 }
+.cards > li{display:flex}   /* let each card fill its grid row */
 .pcard{
-  display:flex; flex-direction:column;
+  display:flex; flex-direction:column; width:100%;
   background:var(--surface); border:1px solid var(--rule); border-radius:4px;
   overflow:hidden; text-decoration:none; color:inherit;
   transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease;
@@ -232,6 +234,10 @@ a{color:inherit}
   border:1px solid var(--rule); border-radius:999px; padding:.15rem .5rem;
 }
 
+/* Text-only project cards — no thumbnail, accent rule instead */
+.pcard--text{border-top:3px solid var(--accent)}
+.pcard--text .pcard-body{padding-top:1.3rem}
+
 /* ---------- Skill chips ---------- */
 .chips{display:flex; flex-wrap:wrap; gap:.4rem; margin:.4rem 0 0; padding:0; list-style:none}
 .chips li{
@@ -241,8 +247,19 @@ a{color:inherit}
 }
 
 /* ---------- Abstract + code ---------- */
-.abstract{font-size:1rem; color:var(--ink-mid)}
+.abstract{font-size:1rem; color:var(--ink-mid); position:relative}
 .abstract p:last-child{margin-bottom:0}
+
+/* Collapsed abstract: clipped, with the last lines fading into the page.
+   The class is applied by script.js, so with JS off the full text shows
+   and the toggle stays hidden. */
+.abstract.is-collapsed{max-height:11rem; overflow:hidden}
+.abstract.is-collapsed::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:5rem;
+  background:linear-gradient(to bottom, rgba(251,250,247,0) 0%, var(--paper) 92%);
+  pointer-events:none;
+}
+.abstract-toggle{margin-top:1rem}
 details{margin-top:1.5rem}
 summary{
   font-family:var(--mono); font-size:.72rem; letter-spacing:.1em;
@@ -270,7 +287,7 @@ pre code{font-size:1em}
   .site-nav a{font-size:.78rem}
 
   .intro{grid-template-columns:1fr; gap:1.25rem}
-  .intro-photo{width:110px; height:138px}
+  .intro-photo{width:120px; height:120px}
   .entry{grid-template-columns:1fr; gap:.2rem}
   .entry-when{padding-top:0; order:2}
   .entry-what{order:1}
